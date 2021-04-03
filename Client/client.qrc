@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="Client">
+    <file>Resources/exe.ico</file>
+    <file>Resources/gameBackImg.png</file>
+  </qresource>
+</RCC>
