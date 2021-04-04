@@ -15,14 +15,14 @@ enum PlayerRole
     GUEST
 };
 
-//玩家状态
+/*玩家状态
 enum PlayerSatus
 {
     //游戏中
     PLAYING,
     //等待中
     READY,
-};
+};*/
 
 //通信数据的类型
 enum CommRequestType

@@ -21,19 +21,22 @@ SOURCES += \
     serverStatus.cpp \
     client.cpp \
     dataClass.cpp \
-    main.cpp
+    main.cpp \
+    startGame.cpp
 
 HEADERS += \
     HomePage.h \
     gameMode.h \
     serverStatus.h \
     client.h \
-    dataClass.h
+    dataClass.h \
+    startGame.h
 
 FORMS += \
     HomePage.ui \
     client.ui \
-    serverStatus.ui
+    serverStatus.ui \
+    startGame.ui
 
 TRANSLATIONS += \
     Gomoku_zh_CN.ts

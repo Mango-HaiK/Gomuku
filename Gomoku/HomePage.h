@@ -6,6 +6,8 @@
 #include <QTcpSocket>
 #include <QPainter>
 #include "dataClass.h"
+#include "gameMode.h"
+#include "startGame.h"
 
 namespace Ui {
 class HomePage;
@@ -63,8 +65,19 @@ protected:
 private:
     Ui::HomePage *ui;
 
+    //启动界面
+    StartGame *startForm;
+    //
+    GameMode *game;
+
+    //游戏类型
+    GameType game_type;
+
+
     //落子标记坐标
     int clickPosRow,clickPosCol;
+
+
 
     //数据
     MsgRequestType *mrt;
@@ -82,10 +95,26 @@ private:
     QTcpSocket *guest_socket;
 
     //当前玩家状态
-    PlayerSatus player_status;
+    //PlayerSatus player_status;
 
     //当前玩家在网络对战中的角色
     PlayerRole player_role;
+
+private slots:
+    //初始化PVE
+    void initPVEGame();
+
+    //初始化PVP
+    void initPVPGame();
+
+    //人执行
+    void chessOneByPerson();
+
+    //AI执行
+    void chessOneByAI();
+
+
+
 };
 
 #endif // HOMEPAGE_H

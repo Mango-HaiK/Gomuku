@@ -1,8 +1,9 @@
 ﻿#include "HomePage.h"
 #include "ui_HomePage.h"
-
+#include <QMouseEvent>
+#include <QDebug>
 //
-const int BoradSize = 15;
+const int BoardSize = 15;
 
 // 棋盘左右边缘空隙
 const int BoardMarginLeft = 250;
@@ -18,6 +19,7 @@ const int MarkSize = 6;
 
 // 格子的大小
 const int BlockSize = 40;
+const int BlockHalfSize = 20;
 
 // 鼠标点击的模糊距离上限
 const int PosDelta = 20;
@@ -30,8 +32,19 @@ HomePage::HomePage(QWidget *parent) :
     ui->setupUi(this);
 
     //固定游戏界面大小
-    setFixedSize(BoardMarginLeft * 2 + BlockSize * BoradSize,
-                 BoardMarginTop * 2 + BlockSize *BoradSize);
+    setFixedSize(BoardMarginLeft * 2 + BlockSize * BoardSize,
+                 BoardMarginTop * 2 + BlockSize *BoardSize);
+
+    setMouseTracking(true);
+
+    startForm = new StartGame();
+
+    //绑定信号
+    connect(startForm,&StartGame::actionPVEMode,this,&HomePage::initPVEGame);
+    connect(startForm,&StartGame::actionPVPMode,this,&HomePage::initPVPGame);
+
+
+    initGameInfo();
 }
 
 HomePage::~HomePage()
@@ -47,7 +60,7 @@ void HomePage::paintEvent(QPaintEvent *event)
     //抗锯齿
     painter.setRenderHint(QPainter::Antialiasing);
 
-    for(int i = 0; i <= BoradSize; ++i)
+    for(int i = 0; i <= BoardSize; ++i)
     {
         painter.drawLine(BoardMarginLeft + BlockSize * i,BoardMarginTop,
                          BoardMarginLeft + BlockSize * i, size().height() - BoardMarginTop);
@@ -56,14 +69,113 @@ void HomePage::paintEvent(QPaintEvent *event)
                          size().width() - BoardMarginLeft, BoardMarginTop + BlockSize * i);
     }
 
+
+
     //绘制落子标记
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
+    if(clickPosRow > 0 && clickPosRow < BoardSize &&
+            clickPosCol > 0 && clickPosCol < BoardSize &&
+            game->boardStatusVec[clickPosRow][clickPosCol] == 0)
+    {
+        game->playerFlag ? brush.setColor(Qt::white) : brush.setColor(Qt::black);
 
+        painter.setBrush(brush);
+        painter.drawRect(BoardMarginLeft + clickPosRow * BlockSize - (MarkSize >> 1),
+                         BoardMarginTop + clickPosCol * BlockSize - (MarkSize >> 1),
+                         MarkSize,MarkSize);
+    }
+
+    //绘制棋子
+
+    //判断对局是否结束
+    if(clickPosRow > 0 && clickPosRow < BoardSize &&
+            clickPosCol > 0 && clickPosCol < BoardSize &&
+            (game->boardStatusVec[clickPosRow][clickPosCol] == 1 ||
+             game->boardStatusVec[clickPosRow][clickPosCol] == -1))
+    {
+        if(game->isWin(clickPosCol,clickPosRow) && game->gameStatus == PLAYING)
+        {
+            game->gameStatus = WIN;
+
+            QString str = NULL;
+            if(game->boardStatusVec[clickPosCol][clickPosRow] == 1)
+                //白旗赢
+                str = "White Win";
+            else if(game->boardStatusVec[clickPosCol][clickPosRow] == -1)
+                //黑棋赢
+                str = "Black Win";
+
+            //TODO 对局结束
+
+            //？？？？
+        }
+    }
+
+    //判断死局
+    //if(game->isDead())
+    {
+        //TODO 对局结束
+    }
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
+    int x = event->x();
+    int y = event->y();
 
+    //只能在棋盘落子
+    if(x >= BoardMarginLeft + BlockHalfSize &&
+            x < size().width() - BoardMarginLeft &&
+            y >= BoardMarginTop + BlockHalfSize &&
+            y < size().height() - BoardMarginTop)
+    {
+
+        //获取点的行和列
+        int col = x / BlockSize;
+        int row = y / BlockSize;
+
+        //获取点的具体坐标
+        int leftTopPosX = BoardMarginLeft + col * BlockSize;
+        int leftTopPosY = BoardMarginTop + row * BlockSize;
+        qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
+        clickPosCol = clickPosRow = -1;
+        int len = 0;
+        //一个方框分成四个区域，根据区域内算出离哪个点最近，从而确定点击位置
+        len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
+        len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
+        if(len < PosDelta)
+        {
+            qDebug("he");
+            clickPosCol = col;
+            clickPosRow = row;
+        }
+
+        len = sqrt((x - leftTopPosX - BlockSize) * (x - leftTopPosX - BlockSize) +
+                   (y - leftTopPosY) * (y - leftTopPosY));
+        if(len < PosDelta)
+        {
+            clickPosCol = col + 1;
+            clickPosRow = row;
+        }
+
+        len = sqrt((x - leftTopPosX) * (x - leftTopPosX) +
+                   (y - leftTopPosY - BlockSize) * (y - leftTopPosY- BlockSize));
+        if(len < PosDelta)
+        {
+            clickPosCol = col;
+            clickPosRow = row + 1;
+        }
+
+        len = sqrt((x - leftTopPosX - BlockSize) * (x - leftTopPosX - BlockSize) +
+                   (y - leftTopPosY- BlockSize) * (y - leftTopPosY- BlockSize));
+        if(len < PosDelta)
+        {
+            clickPosCol = col + 1;
+            clickPosRow = row + 1;
+        }
+    }
+
+    update();
 }
 
 void HomePage::mouseReleaseEvent(QMouseEvent *event)
@@ -72,6 +184,36 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event)
 }
 
 void HomePage::initGameInfo()
+{
+    game = new GameMode();
+
+    //startForm->exec();
+
+    initPVEGame();
+}
+
+void HomePage::initPVEGame()
+{
+    game_type = BOT;
+    //人机模式直接开始不需要准备
+    game->gameStatus = PLAYING;
+
+    game->startGame(game_type);
+
+    update();
+}
+
+void HomePage::initPVPGame()
+{
+
+}
+
+void HomePage::chessOneByPerson()
+{
+
+}
+
+void HomePage::chessOneByAI()
 {
 
 }
@@ -101,7 +243,7 @@ void HomePage::setPlayerRole(PlayerRole role)
     //TODO 初始化游戏信息
     initGameInfo();
 
-    player_status = READY;
+    game->gameStatus = READ;
 
     if(role == HOST)
     {

@@ -26,8 +26,8 @@ public:
     GameMode();
 
 
-    //存储当前棋盘棋子的情况 - 无棋子 => 0 | 黑棋 => -1 | 白棋 => 1
-    vector<vector<int>> boradStatusVec;
+    //存储当前棋盘棋子的情况 - 无棋子 -> 0 | 黑棋 -> -1 | 白棋 -> 1
+    vector<vector<int>> boardStatusVec;
 
     //存储各点位评分情况，用于AI下棋
     vector<vector<int>> scoreVec;
@@ -44,7 +44,13 @@ public:
     //开始游戏
     void startGame(GameType type);
 
-    void
+    //判断输赢
+    bool isWin(int row, int col);
+
+    //判断死局
+    bool isDead();
+
+
 };
 
 #endif // GAMEMODE_H
