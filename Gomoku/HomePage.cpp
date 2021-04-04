@@ -2,6 +2,7 @@
 #include "ui_HomePage.h"
 #include <QMouseEvent>
 #include <QDebug>
+#include <QtMath>
 //
 const int BoardSize = 15;
 
@@ -69,8 +70,6 @@ void HomePage::paintEvent(QPaintEvent *event)
                          size().width() - BoardMarginLeft, BoardMarginTop + BlockSize * i);
     }
 
-
-
     //绘制落子标记
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
@@ -79,10 +78,10 @@ void HomePage::paintEvent(QPaintEvent *event)
             game->boardStatusVec[clickPosRow][clickPosCol] == 0)
     {
         game->playerFlag ? brush.setColor(Qt::white) : brush.setColor(Qt::black);
-
+        qDebug("hello");
         painter.setBrush(brush);
-        painter.drawRect(BoardMarginLeft + clickPosRow * BlockSize - (MarkSize >> 1),
-                         BoardMarginTop + clickPosCol * BlockSize - (MarkSize >> 1),
+        painter.drawRect(BoardMarginLeft + clickPosCol * BlockSize - (MarkSize / 2),
+                         BoardMarginTop + clickPosRow * BlockSize - (MarkSize / 2 ),
                          MarkSize,MarkSize);
     }
 
@@ -94,15 +93,15 @@ void HomePage::paintEvent(QPaintEvent *event)
             (game->boardStatusVec[clickPosRow][clickPosCol] == 1 ||
              game->boardStatusVec[clickPosRow][clickPosCol] == -1))
     {
-        if(game->isWin(clickPosCol,clickPosRow) && game->gameStatus == PLAYING)
+        if(game->isWin(clickPosRow, clickPosCol) && game->gameStatus == PLAYING)
         {
             game->gameStatus = WIN;
 
             QString str = NULL;
-            if(game->boardStatusVec[clickPosCol][clickPosRow] == 1)
+            if(game->boardStatusVec[clickPosRow][clickPosCol] == 1)
                 //白旗赢
                 str = "White Win";
-            else if(game->boardStatusVec[clickPosCol][clickPosRow] == -1)
+            else if(game->boardStatusVec[clickPosRow][clickPosCol] == -1)
                 //黑棋赢
                 str = "Black Win";
 
@@ -129,7 +128,6 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
             y >= BoardMarginTop + BlockHalfSize &&
             y < size().height() - BoardMarginTop)
     {
-
         //获取点的行和列
         int col = x / BlockSize;
         int row = y / BlockSize;
@@ -140,6 +138,7 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
         qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
         clickPosCol = clickPosRow = -1;
         int len = 0;
+        qDebug() << __FUNCTION__ << len;
         //一个方框分成四个区域，根据区域内算出离哪个点最近，从而确定点击位置
         len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
         len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
