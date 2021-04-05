@@ -178,7 +178,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     // 通过鼠标的hover确定落子的标记
     int x = event->x();
     int y = event->y();
-    //qDebug("%f , %f",);
+
     // 棋盘边缘不能落子
     if (x >= kBoardMargin + kBlockSize / 2 &&
             x < size().width() - kBoardMargin &&
@@ -191,7 +191,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
         int leftTopPosX = kBoardMargin + kBlockSize * col;
         int leftTopPosY = kBoardMargin + kBlockSize * row;
-qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
+        qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
         // 根据距离算出合适的点击位置,一共四个点，根据半径距离选最近的
         clickPosRow = -1; // 初始化最终的值
         clickPosCol = -1;

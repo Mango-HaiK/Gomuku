@@ -24,6 +24,11 @@ void ServerStatus::setSocket(QTcpSocket *socket)
     conn_Server_Socket = socket;
 }
 
+QTcpSocket* ServerStatus::getSocket()
+{
+    return conn_Server_Socket;
+}
+
 void ServerStatus::setUserName(QString username)
 {
     this->username = username;
@@ -34,10 +39,10 @@ void ServerStatus::on_btn_create_room_clicked()
     //建立主机
     DataClass::sendMsg(COMM_CLIENT_CREATE," ",conn_Server_Socket);
 
-    game_status->setSocket(conn_Server_Socket);
+    //game_status->setSocket(conn_Server_Socket);
 
     connect(conn_Server_Socket,&QTcpSocket::readyRead,
-            game_status,&HomePage::getNewDataFromServer);
+            game_status,&GameMode::getNewDataFromServer);
 
     //设置玩家角色
     game_status->setPlayerRole(HOST);
@@ -129,7 +134,7 @@ void ServerStatus::setLobbyInfo(QString &data)
     {
         if(ui->tbw_lobby_info->item(row,1)->text()  == "-")
         {
-            //TODO
+            //TODO -- item不可选
         }
     }
 }

@@ -3,14 +3,15 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QtMath>
+#include <QTimer>
 //
 const int BoardSize = 15;
 
-// 棋盘左右边缘空隙
-const int BoardMarginLeft = 250;
+// 棋盘右边缘空隙
+const int BoardMarginRight = 250;
 
 // 棋盘上下边缘空隙
-const int BoardMarginTop = 30;
+const int BoardMargin = 30;
 
 // 棋子半径
 const int Radius = 15;
@@ -25,6 +26,9 @@ const int BlockHalfSize = 20;
 // 鼠标点击的模糊距离上限
 const int PosDelta = 20;
 
+//AI思考时间
+const int AIDelay = 500;
+
 
 HomePage::HomePage(QWidget *parent) :
     QWidget(parent),
@@ -33,8 +37,8 @@ HomePage::HomePage(QWidget *parent) :
     ui->setupUi(this);
 
     //固定游戏界面大小
-    setFixedSize(BoardMarginLeft * 2 + BlockSize * BoardSize,
-                 BoardMarginTop * 2 + BlockSize *BoardSize);
+    setFixedSize(BoardMargin * 2 + BoardMarginRight + BlockSize * BoardSize,
+                 BoardMargin * 2 + BlockSize *BoardSize);
 
     setMouseTracking(true);
 
@@ -44,6 +48,7 @@ HomePage::HomePage(QWidget *parent) :
     connect(startForm,&StartGame::actionPVEMode,this,&HomePage::initPVEGame);
     connect(startForm,&StartGame::actionPVPMode,this,&HomePage::initPVPGame);
 
+    connect(game,&GameMode::listenError,this,&HomePage::listenErrorDispos);
 
     initGameInfo();
 }
@@ -63,11 +68,11 @@ void HomePage::paintEvent(QPaintEvent *event)
 
     for(int i = 0; i <= BoardSize; ++i)
     {
-        painter.drawLine(BoardMarginLeft + BlockSize * i,BoardMarginTop,
-                         BoardMarginLeft + BlockSize * i, size().height() - BoardMarginTop);
+        painter.drawLine(BoardMargin + BlockSize * i,BoardMargin,
+                         BoardMargin + BlockSize * i, size().height() - BoardMargin);
 
-        painter.drawLine(BoardMarginLeft, BoardMarginTop + BlockSize * i,
-                         size().width() - BoardMarginLeft, BoardMarginTop + BlockSize * i);
+        painter.drawLine(BoardMargin, BoardMargin + BlockSize * i,
+                         size().width() - BoardMargin - BoardMarginRight, BoardMargin + BlockSize * i);
     }
 
     //绘制落子标记
@@ -80,13 +85,33 @@ void HomePage::paintEvent(QPaintEvent *event)
         game->playerFlag ? brush.setColor(Qt::white) : brush.setColor(Qt::black);
         qDebug("hello");
         painter.setBrush(brush);
-        painter.drawRect(BoardMarginLeft + clickPosCol * BlockSize - (MarkSize / 2),
-                         BoardMarginTop + clickPosRow * BlockSize - (MarkSize / 2 ),
+        painter.drawRect(BoardMargin + clickPosCol * BlockSize - (MarkSize / 2),
+                         BoardMargin + clickPosRow * BlockSize - (MarkSize / 2 ),
                          MarkSize,MarkSize);
     }
 
     //绘制棋子
+    for (int i = 0; i < BoardSize; ++i)
+    {
+        for (int j = 0; j < BoardSize; ++j)
+        {
+            if(game->boardStatusVec[i][j] == 1)
+            {
+                brush.setColor(Qt::white);
+                painter.setBrush(brush);
+                painter.drawEllipse(BoardMargin + j * BlockSize - Radius,BoardMargin + i * BlockSize - Radius,
+                                    Radius * 2,Radius * 2);
 
+            }else if(game->boardStatusVec[i][j] == -1)
+            {
+                brush.setColor(Qt::black);
+                painter.setBrush(brush);
+                painter.drawEllipse(BoardMargin + j * BlockSize - Radius,BoardMargin + i * BlockSize - Radius,
+                                    Radius * 2,Radius * 2);
+
+            }
+        }
+    }
     //判断对局是否结束
     if(clickPosRow > 0 && clickPosRow < BoardSize &&
             clickPosCol > 0 && clickPosCol < BoardSize &&
@@ -106,13 +131,16 @@ void HomePage::paintEvent(QPaintEvent *event)
                 str = "Black Win";
 
             //TODO 对局结束
-
+            if(game->isWin(clickPosRow,clickPosCol))
+            {
+                qDebug() << str ;
+            }
             //？？？？
         }
     }
 
     //判断死局
-    //if(game->isDead())
+    if(game->isDead())
     {
         //TODO 对局结束
     }
@@ -123,18 +151,18 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
     int y = event->y();
 
     //只能在棋盘落子
-    if(x >= BoardMarginLeft + BlockHalfSize &&
-            x < size().width() - BoardMarginLeft &&
-            y >= BoardMarginTop + BlockHalfSize &&
-            y < size().height() - BoardMarginTop)
+    if(x >= BoardMargin + BlockHalfSize &&
+            x < size().width() - BoardMargin &&
+            y >= BoardMargin + BlockHalfSize &&
+            y < size().height() - BoardMargin)
     {
-        //获取点的行和列
+        //获取最近的最上角点的行和列
         int col = x / BlockSize;
         int row = y / BlockSize;
 
-        //获取点的具体坐标
-        int leftTopPosX = BoardMarginLeft + col * BlockSize;
-        int leftTopPosY = BoardMarginTop + row * BlockSize;
+        int leftTopPosX = BoardMargin + col * BlockSize;
+        int leftTopPosY = BoardMargin + row * BlockSize;
+        qDebug() << event->x() << " - "<<event->y();
         qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
         clickPosCol = clickPosRow = -1;
         int len = 0;
@@ -179,7 +207,13 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
 void HomePage::mouseReleaseEvent(QMouseEvent *event)
 {
-
+    //人下棋
+    if(!(game_type == BOT && ! game->playerFlag))
+    {
+        chessOneByPerson();
+        if(game->gameType == BOT && !game->playerFlag)
+            QTimer::singleShot(AIDelay,this,&HomePage::chessOneByAI);
+    }
 }
 
 void HomePage::initGameInfo()
@@ -188,7 +222,12 @@ void HomePage::initGameInfo()
 
     //startForm->exec();
 
-    initPVEGame();
+    initPVPGame();
+}
+
+void HomePage::listenErrorDispos()
+{
+    //TODO 在聊天窗口显示监听端口号错误
 }
 
 void HomePage::initPVEGame()
@@ -204,12 +243,24 @@ void HomePage::initPVEGame()
 
 void HomePage::initPVPGame()
 {
+    game_type = PERSON;
+    game->gameStatus = PLAYING;
+    game->startGame(PERSON);
 
+    update();
 }
 
 void HomePage::chessOneByPerson()
 {
+    //坐标有效且无子
+    if(clickPosRow != -1 && clickPosCol != -1 &&
+            game->boardStatusVec[clickPosRow][clickPosCol] == 0)
+    {
+        //对手落子
+        game->actionByPerson(clickPosRow,clickPosCol);
 
+        update();
+    }
 }
 
 void HomePage::chessOneByAI()
@@ -217,79 +268,3 @@ void HomePage::chessOneByAI()
 
 }
 
-void HomePage::setSocket(QTcpSocket *socket)
-{
-    conn_server_socket = socket;
-}
-
-void HomePage::getNewDataFromServer()
-{
-    QDataStream in;
-    mrt = new MsgRequestType();
-    in.setDevice(conn_server_socket);
-    in>>mrt->request>>mrt->data;
-
-
-}
-
-void HomePage::setPlayerRole(PlayerRole role)
-{
-    //role == Host => 建立连接等待Guest加入
-    //role == Guest => 发起向主机的连接
-
-    player_role = role;
-
-    //TODO 初始化游戏信息
-    initGameInfo();
-
-    game->gameStatus = READ;
-
-    if(role == HOST)
-    {
-        host_server = new QTcpServer(this);
-        //TODO 在这里设置随机随机端口值
-        //int rec = host_server->listen(QHostAddress::Any,DataClass::port + 1);
-        if(1)
-        {
-            QMessageBox::information(this,"错误","主机监听端口失败,请重试!");
-            //TODO 显示服务器状态窗口
-            return;
-        }
-        connect(host_server,&QTcpServer::newConnection,this,&HomePage::getNewConn);
-    }
-    else
-    {
-        guest_socket = new QTcpSocket(this);
-        //TODO 获取主机信息
-        //guest_socket->connectToHost("127.0.0.1",DataClass::port + 1);
-
-        //连接成功
-        connect(guest_socket,&QTcpSocket::connected,this,&HomePage::connSucceed);
-
-        //连接失败
-        typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
-        connect(guest_socket,static_cast<QAbstractSocketErrorSignal>(&QTcpSocket::error),
-                this,&HomePage::connFail);
-
-    }
-}
-
-void HomePage::setPlayerInfo(QString)
-{
-    //设置玩家信息
-}
-
-void HomePage::getNewConn()
-{
-
-}
-
-void HomePage::connSucceed()
-{
-
-}
-
-void HomePage::connFail()
-{
-
-}

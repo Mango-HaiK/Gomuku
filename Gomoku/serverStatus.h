@@ -12,7 +12,7 @@ class ServerStatus;
 }
 /**
  * @brief The ServerSatus class
- * 用于建立游戏和查看游戏大厅
+ * 建立联机游戏前，所需的联机数据
  */
 class ServerStatus : public QDialog
 {
@@ -22,11 +22,16 @@ public:
     ServerStatus(QDialog *parent = nullptr);
     ~ServerStatus();
 
-    //设置Socket
+    //设置Socket - 返回Socket
     void setSocket(QTcpSocket *socket);
+
+    QTcpSocket* getSocket();
 
     //设置用户名
     void setUserName(QString username);
+
+    //设置玩家类型
+    void setPlayerRole();
 
     //关闭服务器连接
     void colseServerConn();
@@ -60,6 +65,9 @@ private:
 
     //游戏状态
     HomePage *game_status;
+
+    //玩家角色 - HOST or GUEST
+    PlayerRole player_role;
 
     //从socket获取游戏大厅信息
     void getGameInfoData();

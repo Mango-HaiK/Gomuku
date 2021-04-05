@@ -1,4 +1,5 @@
 #include "gameMode.h"
+#include <QMessageBox>
 
 const int BoardSize = 15;
 
@@ -22,7 +23,13 @@ void GameMode::startGame(GameType type)
         boardStatusVec.push_back(lineBoard);
     }
 
-    //PVE 需要初始化评分
+    // PVP 初始化网络对战信息
+    if(gameType == PERSON)
+    {
+        server_status = new ServerStatus();
+        //TODO 其他处理
+    }
+    //PVE 需要初始化评分--？？？
     if(gameType == BOT)
     {
         scoreVec.clear();
@@ -91,11 +98,105 @@ bool GameMode::isWin(int row, int col)
 
 bool GameMode::isDead()
 {
+    //棋盘已经全部填满
     for(int i = 1 ;i < BoardSize ; ++i)
         for(int j = 1 ;j < BoardSize; ++j)
         {
             if(!(boardStatusVec[i][j] == -1 || boardStatusVec[i][j] == 1))
                 return false;
         }
-    return  true;
+    return true;
+}
+
+void GameMode::actionByPerson(int row, int col)
+{
+    updateBoardVec(row,col);
+}
+
+void GameMode::actionByAI(int row, int col)
+{
+
+}
+
+void GameMode::updateBoardVec(int row, int col)
+{
+    playerFlag ? boardStatusVec[row][col] = 1 : boardStatusVec[row][col] = -1;
+
+    playerFlag = !playerFlag;
+}
+
+void GameMode::setSocket(QTcpSocket *socket)
+{
+    conn_server_socket = socket;
+}
+
+void GameMode::getNewDataFromServer()
+{
+    QDataStream in;
+    mrt = new MsgRequestType();
+    in.setDevice(conn_server_socket);
+    in>>mrt->request>>mrt->data;
+}
+
+void GameMode::setPlayerRole(PlayerRole role)
+{
+    //role == Host => 建立连接等待Guest加入
+    //role == Guest => 发起向主机的连接
+
+    player_role = role;
+
+    //TODO 初始化游戏信息
+    //initGameInfo();
+
+    gameStatus = READ;
+
+    if(role == HOST)
+    {
+        host_server = new QTcpServer(this);
+        //TODO 在这里设置随机随机端口值
+        int rec = host_server->listen(QHostAddress::Any,DataClass::port + 1);
+        if(!rec)
+        {
+            //发送监听失败信号
+            emit listenError();
+            server_status->show();
+            return;
+        }
+        connect(host_server,&QTcpServer::newConnection,this,&GameMode::getNewConn);
+    }
+    else
+    {
+        guest_socket = new QTcpSocket(this);
+        //TODO 获取主机信息
+        //guest_socket->connectToHost("127.0.0.1",DataClass::port + 1);
+
+        //连接成功
+        connect(guest_socket,&QTcpSocket::connected,this,&GameMode::connSucceed);
+
+        //连接失败
+        typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
+        connect(guest_socket,static_cast<QAbstractSocketErrorSignal>(&QTcpSocket::error),
+                this,&GameMode::connFail);
+
+    }
+}
+
+void GameMode::setPlayerInfo(QString)
+{
+    //设置玩家信息
+}
+
+void GameMode::getNewConn()
+{
+
+}
+
+void GameMode::connSucceed()
+{
+
+}
+
+void GameMode::connFail()
+{
+
 }
