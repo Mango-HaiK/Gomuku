@@ -5,14 +5,16 @@
 #include <QTableWidget>
 #include <QTcpSocket>
 #include "dataClass.h"
-#include "HomePage.h"
+#include "loginServer.h"
 
 namespace Ui {
 class ServerStatus;
 }
 /**
  * @brief The ServerSatus class
- * 建立联机游戏前，所需的联机数据
+ * 处理服务器大厅的数据，并显示
+ * 创建和加入对局
+ * 返回对手的信息
  */
 class ServerStatus : public QDialog
 {
@@ -22,13 +24,7 @@ public:
     ServerStatus(QDialog *parent = nullptr);
     ~ServerStatus();
 
-    //设置Socket - 返回Socket
-    void setSocket(QTcpSocket *socket);
-
-    QTcpSocket* getSocket();
-
-    //设置用户名
-    void setUserName(QString username);
+    NetPlayerInfo* getNetPlayerInfo();
 
     //设置玩家类型
     void setPlayerRole();
@@ -44,6 +40,8 @@ private slots:
     void on_btn_quit_lobby_clicked();
 
     void on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item);
+
+    void on_btn_login_server_clicked();
 
 signals:
     //与服务器断开信号
@@ -63,11 +61,17 @@ private:
     //用户名
     QString username;
 
-    //游戏状态
-    HomePage *game_status;
+    //登陆服务器
+    LoginServer *login_server;
+
+    //网络玩家对战结构
+    NetPlayerInfo *net_player_info;
 
     //玩家角色 - HOST or GUEST
     PlayerRole player_role;
+
+    //设置Socket - 返回Socket
+    void setSocket();
 
     //从socket获取游戏大厅信息
     void getGameInfoData();

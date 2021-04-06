@@ -18,8 +18,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     HomePage.cpp \
     gameMode.cpp \
+    loginServer.cpp \
     serverStatus.cpp \
-    client.cpp \
     dataClass.cpp \
     main.cpp \
     startGame.cpp
@@ -27,14 +27,14 @@ SOURCES += \
 HEADERS += \
     HomePage.h \
     gameMode.h \
+    loginServer.h \
     serverStatus.h \
-    client.h \
     dataClass.h \
     startGame.h
 
 FORMS += \
     HomePage.ui \
-    client.ui \
+    loginserver.ui \
     serverStatus.ui \
     startGame.ui
 

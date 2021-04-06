@@ -43,6 +43,8 @@ public:
     //游戏状态
     GameStatus gameStatus;
 
+    //初始化棋盘
+    void initBoard();
     //开始游戏
     void startGame(GameType type);
 
@@ -91,8 +93,15 @@ private:
     //数据
     MsgRequestType *mrt;
 
+    //主机玩家信息
+    NetPlayerInfo *host_player_info;
+
+    //客机玩家信息
+    NetPlayerInfo *guest_player_info;
+
     //玩家角色
     PlayerRole player_role;
+
     //游戏服务器
     ServerStatus *server_status;
 
@@ -102,8 +111,17 @@ private:
     //Host 玩家 用于创建服务
     QTcpServer *host_server;
 
-    //Guest 玩家 用于连接socket
-    QTcpSocket *guest_socket;
+    //玩家用于与对手通信的socket
+    QTcpSocket *player_socket;
+
+    //-----
+    //接受从对手客户的数据并处理
+    void getNewDataFromClient();
+
+    //接受到信息开始游戏
+    void recvMsgGameStart();
+
+
 
 signals:
     void listenError();

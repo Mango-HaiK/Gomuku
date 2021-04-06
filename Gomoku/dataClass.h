@@ -15,6 +15,13 @@ enum PlayerRole
     GUEST
 };
 
+//网络对战玩家连接信息
+struct NetPlayerInfo{
+    QTcpSocket *socket;
+    QString username;
+    PlayerRole role;
+};
+
 /*玩家状态
 enum PlayerSatus
 {

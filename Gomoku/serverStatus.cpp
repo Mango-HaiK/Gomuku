@@ -7,6 +7,13 @@ ServerStatus::ServerStatus(QDialog *parent) :
 {
     ui->setupUi(this);
 
+    //连接服务器成功设置socket
+    connect(login_server,&LoginServer::connectYes,
+            this,&ServerStatus::setSocket);
+
+    //socket有待处理信息 - 更新游戏大厅
+    connect(conn_Server_Socket,&QTcpSocket::readyRead,
+            this,&ServerStatus::getGameInfoData);
 }
 
 ServerStatus::~ServerStatus()
@@ -19,19 +26,14 @@ ServerStatus::~ServerStatus()
     delete ui;
 }
 
-void ServerStatus::setSocket(QTcpSocket *socket)
+void ServerStatus::setSocket()
 {
-    conn_Server_Socket = socket;
+    conn_Server_Socket = login_server->getConnServerSocket();
 }
 
-QTcpSocket* ServerStatus::getSocket()
+NetPlayerInfo* ServerStatus::getNetPlayerInfo()
 {
-    return conn_Server_Socket;
-}
-
-void ServerStatus::setUserName(QString username)
-{
-    this->username = username;
+    return net_player_info;
 }
 
 void ServerStatus::on_btn_create_room_clicked()
@@ -39,14 +41,11 @@ void ServerStatus::on_btn_create_room_clicked()
     //建立主机
     DataClass::sendMsg(COMM_CLIENT_CREATE," ",conn_Server_Socket);
 
-    //game_status->setSocket(conn_Server_Socket);
-
-    connect(conn_Server_Socket,&QTcpSocket::readyRead,
-            game_status,&GameMode::getNewDataFromServer);
-
-    //设置玩家角色
-    game_status->setPlayerRole(HOST);
-
+    //connect(conn_Server_Socket,&QTcpSocket::readyRead,
+    //       game_status,&GameMode::getNewDataFromServer);
+    net_player_info->username = username;
+    net_player_info->socket = conn_Server_Socket;
+    net_player_info->role = HOST;
 
 }
 
@@ -141,16 +140,23 @@ void ServerStatus::setLobbyInfo(QString &data)
 
 void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
 {
+    //加入Host 的房间 - 请求与Host建立连接
     int row = ui->tbw_lobby_info->currentRow();
 
     DataClass::sendMsg(COMM_CLIENT_JOIN,ui->tbw_lobby_info->item(row,0)->text(),conn_Server_Socket);
-    game_status->setSocket(conn_Server_Socket);
 
-    connect(conn_Server_Socket,&QTcpSocket::readyRead,
-            game_status,&HomePage::getNewDataFromServer);
+    net_player_info->socket = conn_Server_Socket;
 
-    game_status->setPlayerRole(HOST);
+    net_player_info->role = GUEST;
 
-    game_status->setPlayerInfo(ui->tbw_lobby_info->item(row,0)->text());
+    net_player_info->username = ui->tbw_lobby_info->item(row,0)->text();
 
+}
+
+void ServerStatus::on_btn_login_server_clicked()
+{
+    login_server = new LoginServer();
+
+    login_server->setParent(this);
+    login_server->show();
 }

@@ -51,15 +51,14 @@ private:
     //服务器大厅
     ServerStatus *server_status;
 
+
+
     //落子标记坐标
     int clickPosRow,clickPosCol;
 
 
     //初始化游戏信息
     void initGameInfo();
-
-    //当前玩家状态
-    //PlayerSatus player_status;
 
     //当前玩家在网络对战中的角色
     PlayerRole player_role;

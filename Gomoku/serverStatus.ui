@@ -64,6 +64,19 @@
     <string>退出</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btn_login_server">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>330</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>连接大厅</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

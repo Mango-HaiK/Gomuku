@@ -8,11 +8,8 @@ GameMode::GameMode()
 {
 
 }
-
-void GameMode::startGame(GameType type)
+void GameMode::initBoard()
 {
-    gameType = type;
-
     //初始化棋盘
     boardStatusVec.clear();
     for(int i = 0; i < BoardSize; ++i)
@@ -22,12 +19,24 @@ void GameMode::startGame(GameType type)
             lineBoard.push_back(0);
         boardStatusVec.push_back(lineBoard);
     }
+}
+
+void GameMode::startGame(GameType type)
+{
+    gameType = type;
+
+    initBoard();
 
     // PVP 初始化网络对战信息
     if(gameType == PERSON)
     {
         server_status = new ServerStatus();
-        //TODO 其他处理
+        server_status->exec();
+
+        player_role = server_status->getNetPlayerInfo()->role;
+
+        setPlayerRole(player_role);
+
     }
     //PVE 需要初始化评分--？？？
     if(gameType == BOT)
@@ -166,16 +175,16 @@ void GameMode::setPlayerRole(PlayerRole role)
     }
     else
     {
-        guest_socket = new QTcpSocket(this);
+        player_socket = new QTcpSocket(this);
         //TODO 获取主机信息
         //guest_socket->connectToHost("127.0.0.1",DataClass::port + 1);
 
         //连接成功
-        connect(guest_socket,&QTcpSocket::connected,this,&GameMode::connSucceed);
+        connect(player_socket,&QTcpSocket::connected,this,&GameMode::connSucceed);
 
         //连接失败
         typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
-        connect(guest_socket,static_cast<QAbstractSocketErrorSignal>(&QTcpSocket::error),
+        connect(player_socket,static_cast<QAbstractSocketErrorSignal>(&QTcpSocket::error),
                 this,&GameMode::connFail);
 
     }
@@ -188,7 +197,9 @@ void GameMode::setPlayerInfo(QString)
 
 void GameMode::getNewConn()
 {
-
+    //接收到新的连接 - 处理
+    player_socket = host_server->nextPendingConnection();
+    //connect(player_socket,&QTcpSocket::readyRead,this,&GameMode::getNewDataFromClinet);
 }
 
 void GameMode::connSucceed()
@@ -198,5 +209,26 @@ void GameMode::connSucceed()
 
 void GameMode::connFail()
 {
+
+}
+
+void GameMode::getNewDataFromClient()
+{
+    QDataStream in;
+    mrt = new MsgRequestType();
+
+    in.setDevice(player_socket);
+    in >> mrt->request >> mrt->data;
+    switch (mrt->request) {
+    case COMM_CLIENT_GAMESTART:
+        recvMsgGameStart();
+        break;
+
+    }
+}
+
+void GameMode::recvMsgGameStart()
+{
+    initBoard();
 
 }
