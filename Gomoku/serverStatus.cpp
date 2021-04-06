@@ -3,21 +3,16 @@
 
 ServerStatus::ServerStatus(QDialog *parent) :
     QDialog(parent),
-    ui(new Ui::ServerStatus)
+    ui(new Ui::ServerStatus),conn_flag(false)
 {
     ui->setupUi(this);
 
-    //连接服务器成功设置socket
-    connect(login_server,&LoginServer::connectYes,
-            this,&ServerStatus::setSocket);
-
-    //socket有待处理信息 - 更新游戏大厅
-    connect(conn_Server_Socket,&QTcpSocket::readyRead,
-            this,&ServerStatus::getGameInfoData);
+    if(!conn_flag) ui->btn_create_room->setDisabled(true);
 }
 
 ServerStatus::~ServerStatus()
 {
+    delete login_server;
     if(conn_Server_Socket)
     {
         delete conn_Server_Socket;
@@ -29,6 +24,10 @@ ServerStatus::~ServerStatus()
 void ServerStatus::setSocket()
 {
     conn_Server_Socket = login_server->getConnServerSocket();
+    conn_flag = true;
+    //socket有待处理信息 - 更新游戏大厅
+    connect(conn_Server_Socket,&QTcpSocket::readyRead,
+            this,&ServerStatus::getGameInfoData);
 }
 
 NetPlayerInfo* ServerStatus::getNetPlayerInfo()
@@ -62,6 +61,8 @@ void ServerStatus::on_btn_quit_lobby_clicked()
         conn_Server_Socket->close();
         conn_Server_Socket = nullptr;
     }
+
+    conn_flag = false;
 
     //发送与服务器连接断开信号
     emit disConnByserver();
@@ -157,6 +158,9 @@ void ServerStatus::on_btn_login_server_clicked()
 {
     login_server = new LoginServer();
 
-    login_server->setParent(this);
-    login_server->show();
+    login_server->exec();
+
+    //连接服务器成功设置socket
+    connect(login_server,&LoginServer::connectYes,
+            this,&ServerStatus::setSocket);
 }

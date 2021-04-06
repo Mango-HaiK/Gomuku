@@ -1,10 +1,10 @@
-#include "loginServer.h"
+﻿#include "loginServer.h"
 #include "ui_loginserver.h"
 #include <QMessageBox>
 #include <QIntValidator>
 
-LoginServer::LoginServer(QWidget *parent) :
-    QWidget(parent),
+LoginServer::LoginServer(QDialog *parent) :
+    QDialog(parent),
     ui(new Ui::LoginServer)
 {
     ui->setupUi(this);

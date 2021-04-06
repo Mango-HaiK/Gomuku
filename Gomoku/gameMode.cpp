@@ -1,4 +1,4 @@
-#include "gameMode.h"
+﻿#include "gameMode.h"
 #include <QMessageBox>
 
 const int BoardSize = 15;
@@ -31,8 +31,10 @@ void GameMode::startGame(GameType type)
     if(gameType == PERSON)
     {
         server_status = new ServerStatus();
+        //这里需要对 Host or Guest 分别处理
         server_status->exec();
-
+        //
+        //connect(server_status,&ServerStatus::sendNetPlayerRole,this,&GameMode::setPlayerRole);
         player_role = server_status->getNetPlayerInfo()->role;
 
         setPlayerRole(player_role);

@@ -1,4 +1,4 @@
-#ifndef LOGINSERVER_H
+﻿#ifndef LOGINSERVER_H
 #define LOGINSERVER_H
 
 #include <QWidget>
@@ -13,12 +13,12 @@ class LoginServer;
  * 负责设置IP地址、端口号和用户名信息
  * 连接服务器并返回一个连接服务器的socket
  */
-class LoginServer : public QWidget
+class LoginServer : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit LoginServer(QWidget *parent = nullptr);
+    explicit LoginServer(QDialog *parent = nullptr);
     ~LoginServer();
 
     //返回连接服务器socket

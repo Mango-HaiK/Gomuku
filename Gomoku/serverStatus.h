@@ -64,6 +64,9 @@ private:
     //登陆服务器
     LoginServer *login_server;
 
+    //是否连接服务器
+    bool conn_flag;
+
     //网络玩家对战结构
     NetPlayerInfo *net_player_info;
 

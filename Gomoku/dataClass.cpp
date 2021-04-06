@@ -3,6 +3,7 @@
 const QRegExp DataClass::regIP = QRegExp("\\d{0,3}\\.\\d{0,3}\\.\\d{0,3}\\.\\d{0,3}");
 QString DataClass::username = QString("Admin");
 
+int DataClass::port = 0;
 bool DataClass::checkMsgBox(QString title, QString text)
 {
     QMessageBox msg(title,text,QMessageBox::Question,
