@@ -48,9 +48,6 @@ HomePage::HomePage(QWidget *parent) :
     connect(startForm,&StartGame::actionPVEMode,this,&HomePage::initPVEGame);
     connect(startForm,&StartGame::actionPVPMode,this,&HomePage::initPVPGame);
 
-
-    connect(game,&GameMode::listenError,this,&HomePage::listenErrorDispos);
-
     initGameInfo();
 }
 
@@ -248,6 +245,8 @@ void HomePage::initPVPGame()
     game->gameStatus = READ;
 
     game->startGame(game_type);
+
+    connect(game,&GameMode::listenError,this,&HomePage::listenErrorDispos);
 
     update();
 }

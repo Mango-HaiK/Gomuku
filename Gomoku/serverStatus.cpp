@@ -25,6 +25,7 @@ void ServerStatus::setSocket()
 {
     conn_Server_Socket = login_server->getConnServerSocket();
     conn_flag = true;
+
     //socket有待处理信息 - 更新游戏大厅
     connect(conn_Server_Socket,&QTcpSocket::readyRead,
             this,&ServerStatus::getGameInfoData);
@@ -77,6 +78,8 @@ void ServerStatus::getGameInfoData()
     mrt = new MsgRequestType();
 
     in>>mrt->request>>mrt->data;
+
+    qDebug() << mrt->data;
 
     if(mrt->request == COMM_SERVER_GAMEINFO)
     {
