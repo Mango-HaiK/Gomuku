@@ -248,6 +248,9 @@ void HomePage::initPVPGame()
 
     connect(game,&GameMode::listenError,this,&HomePage::listenErrorDispos);
 
+    ui->btn_send_char_msg->setDisabled(true);
+    ui->text_edit_chat_info->clear();
+
     update();
 }
 

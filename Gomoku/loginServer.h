@@ -25,7 +25,7 @@ public:
     QTcpSocket *getConnServerSocket();
 
 signals:
-    void connectYes();
+    void connectYes(QTcpSocket*);
 
 private slots:
     //服务器连接成功

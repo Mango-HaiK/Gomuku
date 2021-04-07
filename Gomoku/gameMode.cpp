@@ -173,6 +173,8 @@ void GameMode::setPlayerRole(PlayerRole role)
             server_status->show();
             return;
         }
+        //TODO 准备按钮
+
         connect(host_server,&QTcpServer::newConnection,this,&GameMode::getNewConn);
     }
     else

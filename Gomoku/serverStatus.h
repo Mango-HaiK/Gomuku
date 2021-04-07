@@ -43,9 +43,14 @@ private slots:
 
     void on_btn_login_server_clicked();
 
+    //设置与服务器的socket
+    void setSocket(QTcpSocket*);
 signals:
     //与服务器断开信号
     void disConnByserver();
+
+    //创建房间
+    void createRoom();
 private:
     Ui::ServerStatus *ui;
 
@@ -58,9 +63,6 @@ private:
     //数据包
     MsgRequestType *mrt;
 
-    //用户名
-    QString username;
-
     //登陆服务器
     LoginServer *login_server;
 
@@ -72,9 +74,6 @@ private:
 
     //玩家角色 - HOST or GUEST
     PlayerRole player_role;
-
-    //设置Socket - 返回Socket
-    void setSocket();
 
     //从socket获取游戏大厅信息
     void getGameInfoData();

@@ -7,12 +7,20 @@ ServerStatus::ServerStatus(QDialog *parent) :
 {
     ui->setupUi(this);
 
+    login_server = new LoginServer();
+
+    connect(login_server,SIGNAL(connectYes(QTcpSocket*)),
+            this,SLOT(setSocket(QTcpSocket*)));
+
     if(!conn_flag) ui->btn_create_room->setDisabled(true);
 }
 
 ServerStatus::~ServerStatus()
 {
-    delete login_server;
+    if(login_server)
+    {
+        delete login_server;
+    }
     if(conn_Server_Socket)
     {
         delete conn_Server_Socket;
@@ -21,10 +29,13 @@ ServerStatus::~ServerStatus()
     delete ui;
 }
 
-void ServerStatus::setSocket()
+void ServerStatus::setSocket(QTcpSocket* _socket)
 {
-    conn_Server_Socket = login_server->getConnServerSocket();
+    qDebug() <<__FUNCTION__<< " this";
+    conn_Server_Socket = _socket;
     conn_flag = true;
+
+    ui->btn_create_room->setDisabled(false);
 
     //socket有待处理信息 - 更新游戏大厅
     connect(conn_Server_Socket,&QTcpSocket::readyRead,
@@ -43,10 +54,13 @@ void ServerStatus::on_btn_create_room_clicked()
 
     //connect(conn_Server_Socket,&QTcpSocket::readyRead,
     //       game_status,&GameMode::getNewDataFromServer);
-    net_player_info->username = username;
-    net_player_info->socket = conn_Server_Socket;
+
+    //emit createRoom();
+    net_player_info->username = DataClass::username;
+    net_player_info->socket = nullptr;
     net_player_info->role = HOST;
 
+    this->close();
 }
 
 void ServerStatus::on_btn_quit_lobby_clicked()
@@ -72,6 +86,8 @@ void ServerStatus::on_btn_quit_lobby_clicked()
 
 void ServerStatus::getGameInfoData()
 {
+    //QByteArray sbuff = conn_Server_Socket->readAll();
+
     QDataStream in;
     in.setDevice(conn_Server_Socket);
 
@@ -79,19 +95,23 @@ void ServerStatus::getGameInfoData()
 
     in>>mrt->request>>mrt->data;
 
-    qDebug() << mrt->data;
+    //QString str = sbuff;
+    //qDebug() << __FUNCTION__ <<mrt->request<<" "<< str;
 
     if(mrt->request == COMM_SERVER_GAMEINFO)
     {
         if(mrt->data == "")
         {
+            qDebug() << "commmmm";
             ui->tbw_lobby_info->setRowCount(0);
         }
-    }else if(mrt->request == COMM_CLIENT_JOIN)
+        setLobbyInfo(mrt->data);
+    }
+    /*else if(mrt->request == COMM_CLIENT_JOIN)
     {
         setLobbyInfo(mrt->data);
     }
-
+*/
     delete  mrt;
     mrt = nullptr;
 }
@@ -149,6 +169,7 @@ void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
 
     DataClass::sendMsg(COMM_CLIENT_JOIN,ui->tbw_lobby_info->item(row,0)->text(),conn_Server_Socket);
 
+
     net_player_info->socket = conn_Server_Socket;
 
     net_player_info->role = GUEST;
@@ -159,11 +180,7 @@ void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
 
 void ServerStatus::on_btn_login_server_clicked()
 {
-    login_server = new LoginServer();
 
     login_server->exec();
 
-    //连接服务器成功设置socket
-    connect(login_server,&LoginServer::connectYes,
-            this,&ServerStatus::setSocket);
 }

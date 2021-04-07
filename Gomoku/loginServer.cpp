@@ -9,6 +9,11 @@ LoginServer::LoginServer(QDialog *parent) :
     ui(new Ui::LoginServer), conn_Server_Socket(nullptr)
 {
     ui->setupUi(this);
+
+    ui->edit_username->setText("mango");
+    ui->edit_ipadds->setText("127.0.0.1");
+    ui->edit_port->setText("1101");
+
     conn_Server_Socket = new QTcpSocket(this);
     ui->label_show_status->hide();
 }
@@ -29,9 +34,10 @@ void LoginServer::connServerYes()
     DataClass::port = ui->edit_port->text().toInt();
 
     qDebug() << "连接成功";
-    //发送连接成功信号，更新游戏大厅
+    //发送连接成功信号
     this->hide();
-    emit connectYes();
+
+    emit connectYes(conn_Server_Socket);
     return;
 }
 
