@@ -12,7 +12,7 @@ ServerStatus::ServerStatus(QDialog *parent) :
 
     ui->tbw_lobby_info->setSelectionBehavior ( QAbstractItemView::SelectRows);
     ui->tbw_lobby_info->setSelectionMode(QAbstractItemView::SingleSelection);
-
+    ui->tbw_lobby_info->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     login_server = new LoginServer();
 
@@ -124,11 +124,6 @@ void ServerStatus::getGameInfoData()
         }
         setLobbyInfo(mrt->data);
     }
-    else if(mrt->request == COMM_CLIENT_JOIN)
-    {
-        //TODO Host已建立，玩家加入
-
-    }
 
     delete  mrt;
     mrt = nullptr;
@@ -169,8 +164,6 @@ void ServerStatus::setLobbyInfo(QString &data)
         player_status->setTextAlignment(Qt::AlignCenter);
         ui->tbw_lobby_info->setItem(row,3,player_status);
     }
-    //
-
 }
 
 void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
@@ -178,7 +171,7 @@ void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
     int row = ui->tbw_lobby_info->currentRow();
     for(int i  = 0; i < ui->tbw_lobby_info->rowCount(); ++i)
     {
-        if(ui->tbw_lobby_info->item(row,1)->text()  == "-")
+        if(ui->tbw_lobby_info->item(row,1)->text()  != "-")
         {
             QMessageBox::information(this,"提示","该房间不可加入！");
             return;
@@ -192,11 +185,7 @@ void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
 
     host_socket = ui->tbw_lobby_info->item(row,0)->text();
 
-    /*
-    net_player_info->socket = conn_Server_Socket;
-
-    net_player_info->role = GUEST;
-    net_player_info->username = ui->tbw_lobby_info->item(row,0)->text();*/
+    this->close();
 }
 
 

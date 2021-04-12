@@ -6,7 +6,7 @@ const int BoardSize = 15;
 
 GameMode::GameMode()
 {
-
+    mrt = new MsgRequestType();
 }
 void GameMode::initBoard()
 {
@@ -24,9 +24,7 @@ void GameMode::initBoard()
 void GameMode::readyGame(GameType type)
 {
     gameType = type;
-
     initBoard();
-
     // PVP 初始化网络对战信息
     if(gameType == PERSON)
     {
@@ -34,14 +32,9 @@ void GameMode::readyGame(GameType type)
         //这里需要对 Host or Guest 分别处理
 
         server_status->show();
-        //创建主机 -
+        //进入房间 -
         connect(server_status,SIGNAL(createRoom(PlayerRole)),
                 this,SLOT(setPlayerRole(PlayerRole)));
-
-
-        //
-        //player_role = server_status->getNetPlayerInfo()->role;
-        //setPlayerRole(player_role);
     }
     //PVE 需要初始化评分--
     if(gameType == BOT)
@@ -123,6 +116,8 @@ bool GameMode::isDead()
 void GameMode::actionByPerson(int row, int col)
 {
     updateBoardVec(row,col);
+    DataClass::sendMsg(COMM_CLIENT_ONCHESS,
+                           QString::number(row)+"_"+QString::number(col),player_socket);
 }
 
 void GameMode::actionByAI(int row, int col)
@@ -330,11 +325,14 @@ void GameMode::calculateScore()
 
 void GameMode::updateBoardVec(int row, int col)
 {
-    playerFlag ? boardStatusVec[row][col] = 1 : boardStatusVec[row][col] = -1;
+    playerFlag ? boardStatusVec[row][col] = 1 :
+                 boardStatusVec[row][col] = -1 ;
 
     //if(gameType == BOT)
-        playerFlag = !playerFlag;
+    playerFlag = !playerFlag;
 
+    if(gameType == PERSON)
+        turnFlag = (turnFlag == HOST ? GUEST : HOST);
 
 }
 
@@ -364,7 +362,7 @@ void GameMode::setPlayerRole(PlayerRole role)
 
     gameStatus = READ;
 
-    if(role == HOST)
+    if(player_role == HOST)
     {
         host_server = new QTcpServer(this);
 
@@ -377,7 +375,7 @@ void GameMode::setPlayerRole(PlayerRole role)
             return;
         }
         //准备
-        emit sendMsgGameReady(HOST);
+        emit MsgGameReady(HOST);
 
         connect(host_server,&QTcpServer::newConnection,this,&GameMode::getNewConn);
     }
@@ -385,12 +383,11 @@ void GameMode::setPlayerRole(PlayerRole role)
     {
         player_socket = new QTcpSocket();
         //TODO 获取主机信息
-        player_socket->connectToHost(server_status->getHostSocket(),DataClass::port - 1);
+        player_socket->connectToHost(server_status->getHostSocket(),DataClass::port + 1);
 
         //连接成功
         connect(player_socket,&QTcpSocket::connected,this,&GameMode::connSucceed);
 
-        emit sendMsgGameReady(GUEST);
         //连接失败
         typedef void (QAbstractSocket::*QAbstractSocketErrorSignal)(QAbstractSocket::SocketError);
         connect(player_socket,static_cast<QAbstractSocketErrorSignal>(&QTcpSocket::error),
@@ -408,19 +405,20 @@ void GameMode::getNewConn()
 {
     //接收到新的连接 - 处理
     player_socket = host_server->nextPendingConnection();
-    emit recvPlayerJoin();
     connect(player_socket,&QTcpSocket::readyRead,this,&GameMode::getNewDataFromClient);
+    emit PlayerJoin();
 }
 
 void GameMode::connSucceed()
 {
+    qDebug()<<__FUNCTION__;
     connect(player_socket,&QTcpSocket::readyRead,this,&GameMode::getNewDataFromClient);
-    emit sendMsgGameReady(GUEST);
-
+    emit MsgGameReady(GUEST);
 }
 
 void GameMode::connFail()
 {
+    qDebug()<<__FUNCTION__;
     server_status->show();
     QMessageBox::information(server_status,"错误","连接失败！");
 }
@@ -433,17 +431,17 @@ PlayerRole GameMode::getCurrRole()
 void GameMode::getNewDataFromClient()
 {
     QDataStream in;
-    mrt = new MsgRequestType();
-    qDebug() << __FUNCTION__ <<COMM_CLIENT_SENCHAT;
+
     in.setDevice(player_socket);
-    in >> mrt->request >> mrt->data;
+    in>>mrt->request>>mrt->data;
     qDebug() << __FUNCTION__ <<mrt->request <<" "<<mrt->data;
+
     switch (mrt->request) {
     case COMM_CLIENT_GAMESTART:
         recvMsgGameStart();
         break;
     case COMM_CLIENT_SENCHAT:
-        emit recvMsgChat(mrt->data);
+        emit MsgChat(mrt->data);
         break;
     case COMM_CLIENT_ONCHESS:
         recvMsgOnchess();
@@ -456,36 +454,31 @@ void GameMode::getNewDataFromClient()
         break;
     case COMM_CLIENT_UNDONO:
         break;
-
     }
 }
 
 void GameMode::recvMsgOnchess()
 {
     int pos = mrt->data.indexOf("_");
-    int x = mrt->data.mid(0,pos).toInt();
-    int y = mrt->data.mid(pos + 1, mrt->data.size() - pos).toInt();
-    boardStatusVec[x][y] = (player_role == HOST? -1 : 1);
-    //pieceRecord.push_back(qMakePair(QPoint(x,y), plyRole == HOST ? GUEST : HOST));
-    turnFlag = player_role;
-    //ui.gameStatus_client_LB->setText("该你下棋了！");
+    int row = mrt->data.mid(0,pos).toInt();
+    int col = mrt->data.mid(pos + 1, mrt->data.size() - pos).toInt();
 
-    //update();
+    updateBoardVec(row,col);
 }
 
 void GameMode::recvMsgGameStart()
 {
+    qDebug()<<__FUNCTION__;
     turnFlag = HOST;
     gameStatus = PLAYING;
-    initBoard();
     if(player_role == GUEST)
     {
+        qDebug()<<__FUNCTION__;
         DataClass::sendMsg(COMM_CLIENT_GAMESTART,"",player_socket);
-        initBoard();
-        emit gameStart();
         playerFlag = false;
     }else
     {
+        emit gameStart();
         playerFlag = true;
     }
 }

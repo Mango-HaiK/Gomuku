@@ -140,13 +140,13 @@ signals:
     void gameStart();
 
     //游戏准备
-    void sendMsgGameReady(PlayerRole);
+    void MsgGameReady(PlayerRole);
 
     //
-    void recvMsgChat(QString);
+    void MsgChat(QString);
 
     //玩家加入
-    void recvPlayerJoin();
+    void PlayerJoin();
 
 
 };

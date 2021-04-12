@@ -218,14 +218,10 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event)
         chessOneByPerson();
     }
 
-
     //人下棋
-    if(!(game_type == BOT && ! game->playerFlag))
-    {
-        chessOneByPerson();
-        if(game->gameType == BOT && !game->playerFlag)
-            QTimer::singleShot(AIDelay,this,&HomePage::chessOneByAI);
-    }
+    //chessOneByPerson();
+    if(game->gameType == BOT && !game->playerFlag)
+        QTimer::singleShot(AIDelay,this,&HomePage::chessOneByAI);
 }
 
 void HomePage::initGameInfo()
@@ -233,11 +229,6 @@ void HomePage::initGameInfo()
     game = new GameMode();
 
     startForm->exec();
-
-    //游戏准备
-    connect(game,SIGNAL(sendMsgGameReady(PlayerRole)),
-            this,SLOT(recvMsgGameReady(PlayerRole)));
-
 
     ui->btn_undo->setDisabled(false);
     ui->btn_send_char_msg->setDisabled(false);
@@ -282,6 +273,7 @@ void HomePage::recvPlayerJoin()
     {
         ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
                                         " 系统提示: 已有玩家加入，等待对手准备开始游戏！");
+        ui->btn_send_char_msg->setDisabled(false);
     }
 }
 
@@ -320,12 +312,16 @@ void HomePage::initPVPGame()
     connect(game,&GameMode::gameStart,
             this,&HomePage::recvMsgGameStart);
 
+    //游戏准备
+    connect(game,SIGNAL(MsgGameReady(PlayerRole)),
+            this,SLOT(recvMsgGameReady(PlayerRole)));
+
     //接受消息
-    connect(game,SIGNAL(recvMsgChat(QString)),
+    connect(game,SIGNAL(MsgChat(QString)),
             this,SLOT(recvMsgChat(QString)));
 
     //玩家加入
-    connect(game,&GameMode::recvPlayerJoin,
+    connect(game,&GameMode::PlayerJoin,
             this,&HomePage::recvPlayerJoin);
     ui->text_edit_chat_info->clear();
 
@@ -338,9 +334,7 @@ void HomePage::chessOneByPerson()
     if(clickPosRow != -1 && clickPosCol != -1 &&
             game->boardStatusVec[clickPosRow][clickPosCol] == 0)
     {
-        //对手落子
         game->actionByPerson(clickPosRow,clickPosCol);
-
         update();
     }
 }
@@ -351,7 +345,6 @@ void HomePage::chessOneByAI()
     game->actionByAI(clickPosRow,clickPosCol);
     update();
 }
-
 
 void HomePage::on_btn_send_char_msg_clicked()
 {
@@ -367,5 +360,5 @@ void HomePage::on_btn_send_char_msg_clicked()
 
 void HomePage::on_btn_ready_clicked()
 {
-    //game->recvMsgGameStart();
+    game->recvMsgGameStart();
 }
