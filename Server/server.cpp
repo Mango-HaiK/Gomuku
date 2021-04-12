@@ -1,6 +1,10 @@
 #include "server.h"
 
+<<<<<<< HEAD
 Server::Server(QWidget *parent, Qt::WindowFlags flags)
+=======
+Server::Server(QWidget *parent, Qt::WFlags flags)
+>>>>>>> 3dd4e108f06ad8470b2d7dfe3717ff43cb0a2378
                      : QMainWindow(parent, flags), tcpServer_player(NULL), serverStatus(NULL)
 {
     ui.setupUi(this);
