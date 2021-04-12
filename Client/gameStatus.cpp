@@ -63,7 +63,7 @@ void GameStatus::closeEvent(QCloseEvent *event)
 		ui.gameReady_client_BTN->setDisabled(false);
 		ui.undo_client_BTN->setDisabled(true);
 		ui.lose_client_BTN->setDisabled(true);
-		ui.send_client_BTN->setDisabled(true);
+        ui.send_client_BTN->setDisabled(true);
 		//发送退出游戏通知
 		if(plyRole == GUEST)
 		{

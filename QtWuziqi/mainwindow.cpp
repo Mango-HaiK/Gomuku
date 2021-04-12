@@ -229,7 +229,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
-void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+void MainWindow:: mouseReleaseEvent(QMouseEvent *event)
 {
     // 人下棋，并且不能抢机器的棋
     if (!(game_type == BOT && !game->playerFlag))

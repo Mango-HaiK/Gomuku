@@ -147,8 +147,8 @@ void HomePage::paintEvent(QPaintEvent *event)
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
-    //if(!game->playerFlag && game->gameStatus != PLAYING)
-    //    return;
+    if(!game->playerFlag && game->gameStatus != PLAYING)
+        return;
 
     int x = event->x();
     int y = event->y();
@@ -216,12 +216,23 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event)
     if(game_type == PERSON)
     {
         chessOneByPerson();
+    }else if(!(game_type == BOT && !game->playerFlag))
+    {
+        //人下棋
+        chessOneByPerson();
+        if(game->gameType == BOT && !game->playerFlag)
+            QTimer::singleShot(AIDelay,this,&HomePage::chessOneByAI);
     }
+}
 
-    //人下棋
-    //chessOneByPerson();
-    if(game->gameType == BOT && !game->playerFlag)
-        QTimer::singleShot(AIDelay,this,&HomePage::chessOneByAI);
+void HomePage::closeEvent(QCloseEvent *event)
+{
+    if(!DataClass::checkMsgBox("退出","确认退出游戏？"))
+    {
+        event->ignore();
+        return ;
+    }
+    game->~GameMode();
 }
 
 void HomePage::initGameInfo()

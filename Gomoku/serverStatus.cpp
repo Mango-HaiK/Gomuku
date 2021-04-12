@@ -7,8 +7,8 @@ ServerStatus::ServerStatus(QDialog *parent) :
 {
     ui->setupUi(this);
     //将此类的窗口设置为模态
-    setWindowFlags(Qt::Tool |Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint|Qt::Dialog);
-    setWindowModality(Qt::ApplicationModal);
+    //setWindowFlags(Qt::Tool |Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint|Qt::Dialog);
+    //setWindowModality(Qt::ApplicationModal);
 
     ui->tbw_lobby_info->setSelectionBehavior ( QAbstractItemView::SelectRows);
     ui->tbw_lobby_info->setSelectionMode(QAbstractItemView::SingleSelection);

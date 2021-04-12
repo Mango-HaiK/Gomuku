@@ -28,6 +28,8 @@ class GameMode : public QObject
 public:
     GameMode();
 
+    ~GameMode();
+
     //存储当前棋盘棋子的情况 - 无棋子 -> 0 | 黑棋 -> -1 | 白棋 -> 1
     vector<vector<int>> boardStatusVec;
 

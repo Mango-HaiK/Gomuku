@@ -8,6 +8,39 @@ GameMode::GameMode()
 {
     mrt = new MsgRequestType();
 }
+
+GameMode::~GameMode()
+{
+    if(player_role == GUEST)
+    {
+        //关闭和HOST方的连接
+        //然后向HOST方发送退出信息
+        DataClass::sendMsg(COMM_CLIENT_CONNLOSE,"GUEST",conn_server_socket);
+        if(player_socket)
+        {
+            DataClass::sendMsg(COMM_CLIENT_OFFCONN,"",player_socket);
+            player_socket->close();
+            player_socket = NULL;
+        }
+    }
+    else if(player_role == HOST)
+    {
+        //关闭和GUEST方的连接
+        //然后向GUEST方发送退出信息
+        DataClass::sendMsg(COMM_CLIENT_CONNLOSE,"HOST",conn_server_socket);
+        if(player_socket)
+        {
+            DataClass::sendMsg(COMM_CLIENT_OFFCONN,"",player_socket);
+            player_socket->close();
+            player_socket = NULL;
+        }
+        if(host_server)
+        {
+            host_server->close();
+            host_server = NULL;
+        }
+    }
+}
 void GameMode::initBoard()
 {
     //初始化棋盘
@@ -116,7 +149,8 @@ bool GameMode::isDead()
 void GameMode::actionByPerson(int row, int col)
 {
     updateBoardVec(row,col);
-    DataClass::sendMsg(COMM_CLIENT_ONCHESS,
+    if(gameType == PERSON)
+        DataClass::sendMsg(COMM_CLIENT_ONCHESS,
                            QString::number(row)+"_"+QString::number(col),player_socket);
 }
 
@@ -325,8 +359,10 @@ void GameMode::calculateScore()
 
 void GameMode::updateBoardVec(int row, int col)
 {
-    playerFlag ? boardStatusVec[row][col] = 1 :
-                 boardStatusVec[row][col] = -1 ;
+    if(player_role != GUEST)
+        playerFlag ? boardStatusVec[row][col] = 1 : boardStatusVec[row][col] = -1 ;
+    else
+        playerFlag ? boardStatusVec[row][col] = -1 : boardStatusVec[row][col] = 1 ;
 
     //if(gameType == BOT)
     playerFlag = !playerFlag;
@@ -468,12 +504,10 @@ void GameMode::recvMsgOnchess()
 
 void GameMode::recvMsgGameStart()
 {
-    qDebug()<<__FUNCTION__;
     turnFlag = HOST;
     gameStatus = PLAYING;
     if(player_role == GUEST)
     {
-        qDebug()<<__FUNCTION__;
         DataClass::sendMsg(COMM_CLIENT_GAMESTART,"",player_socket);
         playerFlag = false;
     }else

@@ -40,6 +40,8 @@ protected:
     //落子
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void closeEvent(QCloseEvent *event) override;
+
 private:
     Ui::HomePage *ui;
 
@@ -53,6 +55,7 @@ private:
 
     //服务器大厅
     ServerStatus *server_status;
+
 
 
     //落子标记坐标
