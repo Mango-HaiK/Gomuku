@@ -12,7 +12,7 @@ enum PlayerRole
     //主机玩家
     HOST,
     //非主机玩家
-    GUEST
+    GUEST,
 };
 
 //网络对战玩家连接信息

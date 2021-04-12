@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QTableWidget>
 #include <QTcpSocket>
+#include <iostream>
 #include "dataClass.h"
 #include "loginServer.h"
 
@@ -25,6 +26,9 @@ public:
     ~ServerStatus();
 
     NetPlayerInfo* getNetPlayerInfo();
+
+    //获取主机socket
+    QString getHostSocket();
 
     //设置玩家类型
     void setPlayerRole();
@@ -50,7 +54,7 @@ signals:
     void disConnByserver();
 
     //创建房间
-    void createRoom();
+    void createRoom(PlayerRole);
 private:
     Ui::ServerStatus *ui;
 
@@ -80,6 +84,9 @@ private:
 
     //设置大厅信息
     void setLobbyInfo(QString &);
+
+    //
+    QString host_socket;
 };
 
 #endif // SERVERSATUS_H

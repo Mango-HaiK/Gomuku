@@ -9,6 +9,9 @@
 #include "gameMode.h"
 #include "startGame.h"
 #include "serverStatus.h"
+
+class QDateTime;
+
 namespace Ui {
 class HomePage;
 }
@@ -52,7 +55,6 @@ private:
     ServerStatus *server_status;
 
 
-
     //落子标记坐标
     int clickPosRow,clickPosCol;
 
@@ -64,6 +66,20 @@ private:
     PlayerRole player_role;
 
 private slots:
+
+    //关于 ui
+    //游戏准备
+    void recvMsgGameReady(PlayerRole);
+
+    //游戏开始
+    void recvMsgGameStart();
+
+    //玩家加入
+    void recvPlayerJoin();
+
+    void recvMsgChat(QString);
+    //聊天
+
     //监听失败
     void listenErrorDispos();
 
@@ -82,6 +98,8 @@ private slots:
 
 
 
+    void on_btn_send_char_msg_clicked();
+    void on_btn_ready_clicked();
 };
 
 #endif // HOMEPAGE_H

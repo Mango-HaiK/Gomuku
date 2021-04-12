@@ -219,7 +219,7 @@ void GameStatus::getNewDataFromClient()
 	case COMM_CLIENT_GAMESTART:
 		recvMsg_gameStart();
 		break;
-	case COMM_CLIENT_GAMEOP:
+    case COMM_CLIENT_GAMEOP:
 		recvMsg_gameOP();
 		break;
 	case COMM_CLIENT_LOSE:

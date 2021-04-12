@@ -6,6 +6,13 @@ ServerStatus::ServerStatus(QDialog *parent) :
     ui(new Ui::ServerStatus),conn_flag(false)
 {
     ui->setupUi(this);
+    //将此类的窗口设置为模态
+    setWindowFlags(Qt::Tool |Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint|Qt::Dialog);
+    setWindowModality(Qt::ApplicationModal);
+
+    ui->tbw_lobby_info->setSelectionBehavior ( QAbstractItemView::SelectRows);
+    ui->tbw_lobby_info->setSelectionMode(QAbstractItemView::SingleSelection);
+
 
     login_server = new LoginServer();
 
@@ -37,6 +44,7 @@ void ServerStatus::setSocket(QTcpSocket* _socket)
 
     ui->btn_create_room->setDisabled(false);
 
+
     //socket有待处理信息 - 更新游戏大厅
     connect(conn_Server_Socket,&QTcpSocket::readyRead,
             this,&ServerStatus::getGameInfoData);
@@ -47,18 +55,29 @@ NetPlayerInfo* ServerStatus::getNetPlayerInfo()
     return net_player_info;
 }
 
+QString ServerStatus::getHostSocket()
+{
+    return  host_socket;
+}
+
+void ServerStatus::on_btn_login_server_clicked()
+{
+    login_server->exec();
+}
 void ServerStatus::on_btn_create_room_clicked()
 {
     //建立主机
-    DataClass::sendMsg(COMM_CLIENT_CREATE," ",conn_Server_Socket);
+    DataClass::sendMsg(COMM_CLIENT_CREATE,"",conn_Server_Socket);
 
     //connect(conn_Server_Socket,&QTcpSocket::readyRead,
     //       game_status,&GameMode::getNewDataFromServer);
+    net_player_info = new NetPlayerInfo();
 
-    //emit createRoom();
     net_player_info->username = DataClass::username;
     net_player_info->socket = nullptr;
     net_player_info->role = HOST;
+
+    emit createRoom(HOST);
 
     this->close();
 }
@@ -86,7 +105,8 @@ void ServerStatus::on_btn_quit_lobby_clicked()
 
 void ServerStatus::getGameInfoData()
 {
-    //QByteArray sbuff = conn_Server_Socket->readAll();
+
+    //收到的是游戏大厅数据还是 玩家加入Host
 
     QDataStream in;
     in.setDevice(conn_Server_Socket);
@@ -94,9 +114,6 @@ void ServerStatus::getGameInfoData()
     mrt = new MsgRequestType();
 
     in>>mrt->request>>mrt->data;
-
-    //QString str = sbuff;
-    //qDebug() << __FUNCTION__ <<mrt->request<<" "<< str;
 
     if(mrt->request == COMM_SERVER_GAMEINFO)
     {
@@ -107,11 +124,12 @@ void ServerStatus::getGameInfoData()
         }
         setLobbyInfo(mrt->data);
     }
-    /*else if(mrt->request == COMM_CLIENT_JOIN)
+    else if(mrt->request == COMM_CLIENT_JOIN)
     {
-        setLobbyInfo(mrt->data);
+        //TODO Host已建立，玩家加入
+
     }
-*/
+
     delete  mrt;
     mrt = nullptr;
 }
@@ -151,36 +169,34 @@ void ServerStatus::setLobbyInfo(QString &data)
         player_status->setTextAlignment(Qt::AlignCenter);
         ui->tbw_lobby_info->setItem(row,3,player_status);
     }
-    //如果正在游戏中将不可选
+    //
+
+}
+
+void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
+{
     int row = ui->tbw_lobby_info->currentRow();
     for(int i  = 0; i < ui->tbw_lobby_info->rowCount(); ++i)
     {
         if(ui->tbw_lobby_info->item(row,1)->text()  == "-")
         {
-            //TODO -- item不可选
+            QMessageBox::information(this,"提示","该房间不可加入！");
+            return;
         }
     }
-}
 
-void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
-{
     //加入Host 的房间 - 请求与Host建立连接
-    int row = ui->tbw_lobby_info->currentRow();
-
     DataClass::sendMsg(COMM_CLIENT_JOIN,ui->tbw_lobby_info->item(row,0)->text(),conn_Server_Socket);
 
+    emit createRoom(GUEST);
 
+    host_socket = ui->tbw_lobby_info->item(row,0)->text();
+
+    /*
     net_player_info->socket = conn_Server_Socket;
 
     net_player_info->role = GUEST;
-
-    net_player_info->username = ui->tbw_lobby_info->item(row,0)->text();
-
+    net_player_info->username = ui->tbw_lobby_info->item(row,0)->text();*/
 }
 
-void ServerStatus::on_btn_login_server_clicked()
-{
 
-    login_server->exec();
-
-}

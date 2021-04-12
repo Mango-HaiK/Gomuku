@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QtMath>
 #include <QTimer>
+#include <QDateTime>
+
 //
 const int BoardSize = 15;
 
@@ -81,7 +83,7 @@ void HomePage::paintEvent(QPaintEvent *event)
             game->boardStatusVec[clickPosRow][clickPosCol] == 0)
     {
         game->playerFlag ? brush.setColor(Qt::white) : brush.setColor(Qt::black);
-        qDebug("hello");
+
         painter.setBrush(brush);
         painter.drawRect(BoardMargin + clickPosCol * BlockSize - (MarkSize / 2),
                          BoardMargin + clickPosRow * BlockSize - (MarkSize / 2 ),
@@ -145,6 +147,9 @@ void HomePage::paintEvent(QPaintEvent *event)
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
+    //if(!game->playerFlag && game->gameStatus != PLAYING)
+    //    return;
+
     int x = event->x();
     int y = event->y();
 
@@ -160,17 +165,17 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
         int leftTopPosX = BoardMargin + col * BlockSize;
         int leftTopPosY = BoardMargin + row * BlockSize;
-        qDebug() << event->x() << " - "<<event->y();
-        qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
+        //qDebug() << event->x() << " - "<<event->y();
+        //qDebug() << __FUNCTION__ << leftTopPosX << leftTopPosY;
         clickPosCol = clickPosRow = -1;
         int len = 0;
-        qDebug() << __FUNCTION__ << len;
+
         //一个方框分成四个区域，根据区域内算出离哪个点最近，从而确定点击位置
         len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
         len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
         if(len < PosDelta)
         {
-            qDebug("he");
+            //qDebug("he");
             clickPosCol = col;
             clickPosRow = row;
         }
@@ -205,6 +210,15 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
 void HomePage::mouseReleaseEvent(QMouseEvent *event)
 {
+    if(!game->playerFlag && game->gameStatus != PLAYING)
+        return;
+
+    if(game_type == PERSON)
+    {
+        chessOneByPerson();
+    }
+
+
     //人下棋
     if(!(game_type == BOT && ! game->playerFlag))
     {
@@ -220,12 +234,66 @@ void HomePage::initGameInfo()
 
     startForm->exec();
 
+    //游戏准备
+    connect(game,SIGNAL(sendMsgGameReady(PlayerRole)),
+            this,SLOT(recvMsgGameReady(PlayerRole)));
+
+
+    ui->btn_undo->setDisabled(false);
+    ui->btn_send_char_msg->setDisabled(false);
     //initPVPGame();
+}
+
+void HomePage::recvMsgGameReady(PlayerRole role)
+{
+    ui->btn_send_char_msg->setDisabled(true);
+    ui->btn_undo->setDisabled(true);
+    qDebug() << __FUNCTION__ << role;
+    if(role == HOST)
+    {
+        ui->btn_ready->setDisabled(true);
+        ui->edit_playerA_name->setText("白棋");
+        ui->edit_playerB_name->setText("黑棋");
+        ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                        " 系统提示: 等待玩家加入...");
+    }else
+    {
+        ui->btn_send_char_msg->setDisabled(false);
+        ui->btn_ready->setDisabled(false);
+        ui->edit_playerA_name->setText("黑棋");
+        ui->edit_playerB_name->setText("白棋");
+        ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                        " 系统提示: 已加入游戏,赶紧准备开始游戏吧！");
+    }
+}
+
+void HomePage::recvMsgGameStart()
+{
+    ui->btn_undo->setDisabled(false);
+    ui->btn_currender->setDisabled(false);
+    ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                    " 系统提示: 对局已开始！");
+
+}
+
+void HomePage::recvPlayerJoin()
+{
+    if(game->getCurrRole() == HOST)
+    {
+        ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                        " 系统提示: 已有玩家加入，等待对手准备开始游戏！");
+    }
+}
+
+void HomePage::recvMsgChat(QString msg)
+{
+    ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                    " 旗鼓相当的对手:"+ msg);
 }
 
 void HomePage::listenErrorDispos()
 {
-    //TODO 在聊天窗口显示监听端口号错误
+
 }
 
 void HomePage::initPVEGame()
@@ -234,7 +302,7 @@ void HomePage::initPVEGame()
     //人机模式直接开始不需要准备
     game->gameStatus = PLAYING;
 
-    game->startGame(game_type);
+    game->readyGame(game_type);
 
     update();
 }
@@ -244,11 +312,21 @@ void HomePage::initPVPGame()
     game_type = PERSON;
     game->gameStatus = READ;
 
-    game->startGame(game_type);
+    game->readyGame(game_type);
 
     connect(game,&GameMode::listenError,this,&HomePage::listenErrorDispos);
 
-    ui->btn_send_char_msg->setDisabled(true);
+    //游戏开始
+    connect(game,&GameMode::gameStart,
+            this,&HomePage::recvMsgGameStart);
+
+    //接受消息
+    connect(game,SIGNAL(recvMsgChat(QString)),
+            this,SLOT(recvMsgChat(QString)));
+
+    //玩家加入
+    connect(game,&GameMode::recvPlayerJoin,
+            this,&HomePage::recvPlayerJoin);
     ui->text_edit_chat_info->clear();
 
     update();
@@ -269,6 +347,25 @@ void HomePage::chessOneByPerson()
 
 void HomePage::chessOneByAI()
 {
-
+    qDebug() << __FUNCTION__;
+    game->actionByAI(clickPosRow,clickPosCol);
+    update();
 }
 
+
+void HomePage::on_btn_send_char_msg_clicked()
+{
+    if(ui->edit_send_msg->text() == "")
+        return;
+    QString msg = ui->edit_send_msg->text();
+    ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                    " 自己:"+ msg);
+    DataClass::sendMsg(COMM_CLIENT_SENCHAT,msg,game->player_socket);
+
+    ui->edit_send_msg->setText("");
+}
+
+void HomePage::on_btn_ready_clicked()
+{
+    //game->recvMsgGameStart();
+}
