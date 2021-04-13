@@ -68,6 +68,7 @@ void GameMode::readyGame(GameType type)
         //进入房间 -
         connect(server_status,SIGNAL(createRoom(PlayerRole)),
                 this,SLOT(setPlayerRole(PlayerRole)));
+        playerFlag = false;
     }
     //PVE 需要初始化评分--
     if(gameType == BOT)
@@ -80,8 +81,8 @@ void GameMode::readyGame(GameType type)
                 lineBoard.push_back(0);
             scoreVec.push_back(lineBoard);
         }
-    }
     playerFlag = true;
+    }
 }
 
 bool GameMode::isWin(int row, int col)
@@ -364,7 +365,6 @@ void GameMode::updateBoardVec(int row, int col)
     else
         playerFlag ? boardStatusVec[row][col] = -1 : boardStatusVec[row][col] = 1 ;
 
-    //if(gameType == BOT)
     playerFlag = !playerFlag;
 
     if(gameType == PERSON)

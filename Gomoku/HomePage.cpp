@@ -82,7 +82,10 @@ void HomePage::paintEvent(QPaintEvent *event)
             clickPosCol > 0 && clickPosCol < BoardSize &&
             game->boardStatusVec[clickPosRow][clickPosCol] == 0)
     {
-        game->playerFlag ? brush.setColor(Qt::white) : brush.setColor(Qt::black);
+        if(game_type == PERSON && game->turnFlag == GUEST)
+            game->playerFlag ? brush.setColor(Qt::black) : brush.setColor(Qt::white);
+        else
+            game->playerFlag ? brush.setColor(Qt::white) : brush.setColor(Qt::black);
 
         painter.setBrush(brush);
         painter.drawRect(BoardMargin + clickPosCol * BlockSize - (MarkSize / 2),
@@ -147,7 +150,8 @@ void HomePage::paintEvent(QPaintEvent *event)
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
-    if(!game->playerFlag && game->gameStatus != PLAYING)
+    qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
+    if(!game->playerFlag || game->gameStatus == READ)
         return;
 
     int x = event->x();
@@ -210,7 +214,8 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
 void HomePage::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(!game->playerFlag && game->gameStatus != PLAYING)
+    qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
+    if(!game->playerFlag || game->gameStatus == READ)
         return;
 
     if(game_type == PERSON)
@@ -372,4 +377,5 @@ void HomePage::on_btn_send_char_msg_clicked()
 void HomePage::on_btn_ready_clicked()
 {
     game->recvMsgGameStart();
+    recvMsgGameStart();
 }
