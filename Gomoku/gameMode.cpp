@@ -108,7 +108,6 @@ bool GameMode::isWin(int row, int col)
         for(int j = 0; j < 2 ;++j)
         {
             flag = true;
-
             //循环向其中一个方向遍历，如果有棋子颜色相同则count++，否则结束在该方向的遍历
             while(flag)
             {
@@ -118,7 +117,8 @@ bool GameMode::isWin(int row, int col)
                 //棋盘边界判断
                 if(temp_col >= 0 && temp_col <= BoardSize &&
                         temp_row >= 0 && temp_row <= BoardSize)
-                    boardStatusVec[temp_row][temp_col] == boardStatusVec[row][col] ? ++count : flag = false;
+                    boardStatusVec[temp_row][temp_col] == boardStatusVec[row][col] ?
+                                ++count : flag = false;
                 else
                     flag = false;
             }
