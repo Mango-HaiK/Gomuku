@@ -418,7 +418,7 @@ void GameMode::setPlayerRole(PlayerRole role)
     else
     {
         player_socket = new QTcpSocket();
-        //TODO 获取主机信息
+        // 获取主机信息
         player_socket->connectToHost(server_status->getHostSocket(),DataClass::port + 1);
 
         //连接成功
