@@ -1,10 +1,11 @@
 ﻿#ifndef GAMEMODE_H
 #define GAMEMODE_H
 
-#include <vector>
 #include "serverStatus.h"
 #include "dataClass.h"
+#include <QStack>
 
+class QTcpServer;
 using std::vector;
 
 //游戏类型
@@ -36,6 +37,11 @@ public:
     //存储各点位评分情况，用于AI下棋
     vector<vector<int>> scoreVec;
 
+    int actionNum;
+
+    //存储棋盘信息，用于悔棋
+    QStack<vector<vector<int>>> boardRecord;
+
     //当前下棋的一方 - AI
     bool playerFlag;
 
@@ -44,6 +50,7 @@ public:
 
     //游戏状态
     GameStatus gameStatus;
+
 
     //玩家用于与对手通信的socket
     QTcpSocket *player_socket;
@@ -58,6 +65,9 @@ public:
 
     //判断死局
     bool isDead();
+
+    //是否同意悔棋
+    bool isUndo();
 
     //落子 - 人
     void actionByPerson(int row,int col);
@@ -101,6 +111,21 @@ public:
     //接受到信息开始游戏
     void recvMsgGameStart();
 
+    //悔棋
+    void undo();
+
+    void actionUndo();
+
+    //悔棋请求
+    void recvMsgUndo();
+
+    //同意悔棋
+    void recvMsgUndoYes();
+
+    //拒绝悔棋
+    void recvMsgUndoNo();
+
+    void sendUndoInfo(bool);
 private:
     //数据
     MsgRequestType *mrt;
@@ -131,6 +156,7 @@ private:
     //落子
     void recvMsgOnchess();
 
+
 private slots:
     //设置玩家角色
     void setPlayerRole(PlayerRole);
@@ -150,7 +176,10 @@ signals:
     //玩家加入
     void PlayerJoin();
 
+    //悔棋
+    void MsgUndo();
 
+    void isAgreeUndo(bool);
 };
 
 #endif // GAMEMODE_H

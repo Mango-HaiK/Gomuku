@@ -1,5 +1,8 @@
 ﻿#include "gameMode.h"
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QMessageBox>
+#include <vector>
 
 const int BoardSize = 15;
 
@@ -40,6 +43,7 @@ GameMode::~GameMode()
             host_server = NULL;
         }
     }
+    if(mrt) delete mrt;
 }
 void GameMode::initBoard()
 {
@@ -52,6 +56,10 @@ void GameMode::initBoard()
             lineBoard.push_back(0);
         boardStatusVec.push_back(lineBoard);
     }
+    //初始化棋盘记录
+    boardRecord.clear();
+
+    actionNum = 0;
 }
 
 void GameMode::readyGame(GameType type)
@@ -188,6 +196,7 @@ void GameMode::actionByAI(int row, int col)
     std::pair<int, int> pointPair = maxPoints.at(index);
     row = pointPair.first; // 记录落子点
     col = pointPair.second;
+
     updateBoardVec(row, col);
 }
 
@@ -361,15 +370,23 @@ void GameMode::calculateScore()
 void GameMode::updateBoardVec(int row, int col)
 {
     if(player_role != GUEST)
+    {
         playerFlag ? boardStatusVec[row][col] = 1 : boardStatusVec[row][col] = -1 ;
-    else
+    }else
+    {
         playerFlag ? boardStatusVec[row][col] = -1 : boardStatusVec[row][col] = 1 ;
-
+    }
     playerFlag = !playerFlag;
 
     if(gameType == PERSON)
         turnFlag = (turnFlag == HOST ? GUEST : HOST);
 
+    ++actionNum;
+
+    //保存棋盘记录
+    vector<vector<int>> temp_boardStatusVec = boardStatusVec;
+    boardRecord.push(temp_boardStatusVec);
+    //qDebug() << boardRecord.size();
 }
 
 void GameMode::setSocket(QTcpSocket *socket)
@@ -485,10 +502,13 @@ void GameMode::getNewDataFromClient()
     case COMM_CLIENT_LOSE:
         break;
     case COMM_CLIENT_UNDO:
+        recvMsgUndo();
         break;
     case COMM_CLIENT_UNDOYES:
+        recvMsgUndoYes();
         break;
     case COMM_CLIENT_UNDONO:
+        recvMsgUndoNo();
         break;
     }
 }
@@ -515,4 +535,44 @@ void GameMode::recvMsgGameStart()
         emit gameStart();
         playerFlag = true;
     }
+}
+void GameMode::undo()
+{
+    if(gameType == BOT)
+    {
+        actionUndo();
+    }else
+    {
+        DataClass::sendMsg(COMM_CLIENT_UNDO,"",player_socket);
+    }
+}
+
+void GameMode::actionUndo()
+{
+    actionNum -= 2;
+    boardStatusVec = boardRecord.pop();
+    boardStatusVec = boardRecord.pop();
+    boardStatusVec = boardRecord.top();
+}
+void GameMode::recvMsgUndo()
+{
+    emit MsgUndo();
+}
+
+void GameMode::sendUndoInfo(bool flag)
+{
+    if(flag)
+        DataClass::sendMsg(COMM_CLIENT_UNDOYES,"",player_socket);
+    else
+        DataClass::sendMsg(COMM_CLIENT_UNDONO,"",player_socket);
+}
+void GameMode::recvMsgUndoYes()
+{
+    actionUndo();
+    emit isAgreeUndo(true);
+}
+
+void GameMode::recvMsgUndoNo()
+{
+    emit isAgreeUndo(false);
 }

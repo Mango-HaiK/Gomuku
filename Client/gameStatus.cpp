@@ -355,7 +355,7 @@ void GameStatus::recvMsg_undoYes()
 	whosTurn = plyRole;
 	if(pieceRecord.size() > 0)
 	{
-		chessboardRecord[pieceRecord[pieceRecord.size() - 1].first.x()-1][pieceRecord[pieceRecord.size() - 1].first.y()-1] = 0;
+        chessboardRecord[pieceRecord[pieceRecord.size() - 1].first.x()-1][pieceRecord[pieceRecord.size() - 1].first.y()-1] = 0;
 		pieceRecord.removeAt(pieceRecord.size() - 1);
 	}
 	if(pieceRecord.size() > 0)
@@ -439,7 +439,6 @@ void GameStatus::on_undo_client_BTN_clicked()
 	whosTurn = (plyRole == HOST ? GUEST : HOST);
 	DataClass::sendMsg(COMM_CLIENT_UNDO,"",tcpSocket_player);
 }
-
 void GameStatus::on_gameReady_client_BTN_clicked()
 {
 	if(plyRole == GUEST)

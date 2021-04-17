@@ -50,6 +50,8 @@ HomePage::HomePage(QWidget *parent) :
     connect(startForm,&StartGame::actionPVEMode,this,&HomePage::initPVEGame);
     connect(startForm,&StartGame::actionPVPMode,this,&HomePage::initPVPGame);
 
+    ui->btn_undo->setDisabled(true);
+
     initGameInfo();
 }
 
@@ -147,10 +149,20 @@ void HomePage::paintEvent(QPaintEvent *event)
     {
         //TODO 对局结束
     }
+
+    //场上棋子数大于8且不小于6时才能悔棋
+    if(game->gameStatus == PLAYING &&
+            game->playerFlag &&
+            game->actionNum >= 8)
+    {
+        ui->btn_undo->setDisabled(false);
+    }
+    if(game->actionNum <= 6)
+        ui->btn_undo->setDisabled(true);
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
+    //qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
     if(!game->playerFlag || game->gameStatus == READ)
         return;
 
@@ -214,7 +226,7 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
 void HomePage::mouseReleaseEvent(QMouseEvent *event)
 {
-    qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
+    //qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
     if(!game->playerFlag || game->gameStatus == READ)
         return;
 
@@ -246,16 +258,14 @@ void HomePage::initGameInfo()
 
     startForm->exec();
 
-    ui->btn_undo->setDisabled(false);
-    ui->btn_send_char_msg->setDisabled(false);
+
     //initPVPGame();
 }
 
 void HomePage::recvMsgGameReady(PlayerRole role)
 {
     ui->btn_send_char_msg->setDisabled(true);
-    ui->btn_undo->setDisabled(true);
-    qDebug() << __FUNCTION__ << role;
+    //ui->btn_undo->setDisabled(true);
     if(role == HOST)
     {
         ui->btn_ready->setDisabled(true);
@@ -276,7 +286,7 @@ void HomePage::recvMsgGameReady(PlayerRole role)
 
 void HomePage::recvMsgGameStart()
 {
-    ui->btn_undo->setDisabled(false);
+    //ui->btn_undo->setDisabled(false);
     ui->btn_currender->setDisabled(false);
     ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
                                     " 系统提示: 对局已开始！");
@@ -310,6 +320,10 @@ void HomePage::initPVEGame()
     //人机模式直接开始不需要准备
     game->gameStatus = PLAYING;
 
+    ui->btn_ready->setDisabled(true);
+    ui->btn_undo->setDisabled(true);
+    ui->btn_send_char_msg->setDisabled(true);
+
     game->readyGame(game_type);
 
     update();
@@ -339,6 +353,13 @@ void HomePage::initPVPGame()
     //玩家加入
     connect(game,&GameMode::PlayerJoin,
             this,&HomePage::recvPlayerJoin);
+
+    connect(game,&GameMode::MsgUndo,
+            this,&HomePage::undo);
+
+    connect(game,SIGNAL(isAgreeUndo(bool)),
+            this,SLOT(isAgreeUndo(bool)));
+
     ui->text_edit_chat_info->clear();
 
     update();
@@ -378,4 +399,38 @@ void HomePage::on_btn_ready_clicked()
 {
     game->recvMsgGameStart();
     recvMsgGameStart();
+}
+
+void HomePage::on_btn_undo_clicked()
+{
+    if(game_type == PERSON)
+    {
+        ui->btn_undo->setDisabled(true);
+        ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                        " 系统提示:正在请求对方悔棋...");
+    }
+    game->undo();
+    update();
+}
+
+void HomePage::undo()
+{
+    if(DataClass::checkMsgBox("提示","对方请求悔棋是否同意？"))
+    {
+        game->actionUndo();
+        game->sendUndoInfo(true);
+    }else
+    {
+        game->sendUndoInfo(false);
+    }
+}
+
+void HomePage::isAgreeUndo(bool flag)
+{
+    if(flag)
+        QMessageBox::information(this,"提示","对方同意悔棋！");
+    else
+        QMessageBox::information(this,"提示","对方拒绝悔棋！");
+
+    ui->btn_undo->setDisabled(false);
 }

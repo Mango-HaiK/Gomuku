@@ -56,8 +56,6 @@ private:
     //服务器大厅
     ServerStatus *server_status;
 
-
-
     //落子标记坐标
     int clickPosRow,clickPosCol;
 
@@ -99,10 +97,14 @@ private slots:
     //AI执行
     void chessOneByAI();
 
+    //悔棋
+    void undo();
 
+    void isAgreeUndo(bool);
 
     void on_btn_send_char_msg_clicked();
     void on_btn_ready_clicked();
+    void on_btn_undo_clicked();
 };
 
 #endif // HOMEPAGE_H

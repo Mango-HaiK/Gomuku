@@ -13,6 +13,8 @@ enum PlayerRole
     HOST,
     //非主机玩家
     GUEST,
+    //AI
+    AI
 };
 
 //网络对战玩家连接信息
@@ -21,15 +23,6 @@ struct NetPlayerInfo{
     QString username;
     PlayerRole role;
 };
-
-/*玩家状态
-enum PlayerSatus
-{
-    //游戏中
-    PLAYING,
-    //等待中
-    READY,
-};*/
 
 //通信数据的类型
 enum CommRequestType

@@ -2,7 +2,7 @@
 #include "ui_loginserver.h"
 #include <QMessageBox>
 #include <QIntValidator>
-//#include <QNetworkProxy>
+
 
 LoginServer::LoginServer(QDialog *parent) :
     QDialog(parent),
