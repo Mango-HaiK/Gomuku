@@ -57,7 +57,16 @@ HomePage::HomePage(QWidget *parent) :
 
 HomePage::~HomePage()
 {
+    if(startForm)  delete startForm;
+    if(game) delete game;
     delete ui;
+}
+
+void HomePage::setTextInfo(QString msg)
+{
+    ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
+                                    " "+msg);
+
 }
 
 void HomePage::paintEvent(QPaintEvent *event)
@@ -125,29 +134,42 @@ void HomePage::paintEvent(QPaintEvent *event)
     {
         if(game->isWin(clickPosRow, clickPosCol) && game->gameStatus == PLAYING)
         {
-            game->gameStatus = WIN;
+            //game->gameStatus = WIN;
 
             QString str = NULL;
             if(game->boardStatusVec[clickPosRow][clickPosCol] == 1)
-                //白旗赢
+            {
                 str = "White Win";
+                QMessageBox::information(this,"","游戏结束白棋获胜");
+            }
+
             else if(game->boardStatusVec[clickPosRow][clickPosCol] == -1)
-                //黑棋赢
+            {
                 str = "Black Win";
+                QMessageBox::information(this,"","游戏结束黑棋获胜");
+            }
 
             //TODO 对局结束
             if(game->isWin(clickPosRow,clickPosCol))
             {
                 qDebug() << str ;
+                if(game_type == PERSON)
+                {
+
+                }else
+                {
+                    initPVEGame();
+                }
+                game->initBoard();
             }
-            //？？？？
         }
     }
 
     //判断死局
     if(game->isDead())
     {
-        //TODO 对局结束
+        QMessageBox::information(this,"提示","死局，请开启下一局游戏！");
+
     }
 
     //场上棋子数大于8且不小于6时才能悔棋
@@ -157,7 +179,7 @@ void HomePage::paintEvent(QPaintEvent *event)
     {
         ui->btn_undo->setDisabled(false);
     }
-    if(game->actionNum <= 6)
+    if(game->actionNum <= 6 || !game->playerFlag)
         ui->btn_undo->setDisabled(true);
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
@@ -226,7 +248,6 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
 void HomePage::mouseReleaseEvent(QMouseEvent *event)
 {
-    //qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
     if(!game->playerFlag || game->gameStatus == READ)
         return;
 
@@ -248,8 +269,8 @@ void HomePage::closeEvent(QCloseEvent *event)
     {
         event->ignore();
         return ;
-    }
-    game->~GameMode();
+    }else
+        event->accept();
 }
 
 void HomePage::initGameInfo()
@@ -290,7 +311,6 @@ void HomePage::recvMsgGameStart()
     ui->btn_currender->setDisabled(false);
     ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
                                     " 系统提示: 对局已开始！");
-
 }
 
 void HomePage::recvPlayerJoin()
@@ -336,6 +356,8 @@ void HomePage::initPVPGame()
 
     game->readyGame(game_type);
 
+    server_status = game->getServerStatus();
+
     connect(game,&GameMode::listenError,this,&HomePage::listenErrorDispos);
 
     //游戏开始
@@ -359,6 +381,9 @@ void HomePage::initPVPGame()
 
     connect(game,SIGNAL(isAgreeUndo(bool)),
             this,SLOT(isAgreeUndo(bool)));
+
+    connect(game,&GameMode::MsgPlayerQuit,
+            this,&HomePage::PlayerQuit);
 
     ui->text_edit_chat_info->clear();
 
@@ -434,3 +459,28 @@ void HomePage::isAgreeUndo(bool flag)
 
     ui->btn_undo->setDisabled(false);
 }
+
+void HomePage::on_btn_currender_clicked()
+{
+
+    //玩家退出当前游戏
+    if(DataClass::checkMsgBox("提示","是否退出当前对局？"))
+    {
+        if(game_type == BOT)
+        {
+            startForm->show();
+            return;
+        }
+
+        game->playerQuit();
+    }
+    else
+        return;
+}
+
+void HomePage::PlayerQuit()
+{
+    QMessageBox::information(this,"提示","玩家已退出游戏");
+
+}
+

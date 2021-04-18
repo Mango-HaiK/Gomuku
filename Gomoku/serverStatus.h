@@ -36,6 +36,13 @@ public:
     //关闭服务器连接
     void colseServerConn();
 
+    QTcpSocket* getServerSocket();
+
+    //用于连接服务器的socket
+    QTcpSocket *conn_Server_Socket;
+
+    void joinHostYes(QString);
+
 private slots:
 
     //建立房间
@@ -58,9 +65,6 @@ signals:
 private:
     Ui::ServerStatus *ui;
 
-    //用于连接服务器的socket
-    QTcpSocket *conn_Server_Socket;
-
     //存储玩家对战信息
     QList<QPair<QString,QString>> player_conn_info;
 
@@ -72,9 +76,6 @@ private:
 
     //是否连接服务器
     bool conn_flag;
-
-    //网络玩家对战结构
-    NetPlayerInfo *net_player_info;
 
     //玩家角色 - HOST or GUEST
     PlayerRole player_role;

@@ -7,43 +7,17 @@
 const int BoardSize = 15;
 
 
-GameMode::GameMode()
+GameMode::GameMode():player_socket(nullptr),
+    conn_server_socket(nullptr)
 {
     mrt = new MsgRequestType();
+    conn_server_socket = new QTcpSocket();
 }
 
 GameMode::~GameMode()
 {
-    if(player_role == GUEST)
-    {
-        //关闭和HOST方的连接
-        //然后向HOST方发送退出信息
-        DataClass::sendMsg(COMM_CLIENT_CONNLOSE,"GUEST",conn_server_socket);
-        if(player_socket)
-        {
-            DataClass::sendMsg(COMM_CLIENT_OFFCONN,"",player_socket);
-            player_socket->close();
-            player_socket = NULL;
-        }
-    }
-    else if(player_role == HOST)
-    {
-        //关闭和GUEST方的连接
-        //然后向GUEST方发送退出信息
-        DataClass::sendMsg(COMM_CLIENT_CONNLOSE,"HOST",conn_server_socket);
-        if(player_socket)
-        {
-            DataClass::sendMsg(COMM_CLIENT_OFFCONN,"",player_socket);
-            player_socket->close();
-            player_socket = NULL;
-        }
-        if(host_server)
-        {
-            host_server->close();
-            host_server = NULL;
-        }
-    }
     if(mrt) delete mrt;
+    if(conn_server_socket) delete conn_server_socket;
 }
 void GameMode::initBoard()
 {
@@ -389,9 +363,9 @@ void GameMode::updateBoardVec(int row, int col)
     //qDebug() << boardRecord.size();
 }
 
-void GameMode::setSocket(QTcpSocket *socket)
+void GameMode::setSocket()
 {
-    conn_server_socket = socket;
+    conn_server_socket = server_status->getServerSocket();
 }
 
 void GameMode::getNewDataFromServer()
@@ -419,7 +393,7 @@ void GameMode::setPlayerRole(PlayerRole role)
     {
         host_server = new QTcpServer(this);
 
-        int rec = host_server->listen(QHostAddress::Any,DataClass::port + 1);
+        int rec = host_server->listen(QHostAddress::AnyIPv4,DataClass::port + 1);
         if(!rec)
         {
             //发送监听失败信号
@@ -449,15 +423,14 @@ void GameMode::setPlayerRole(PlayerRole role)
     }
 }
 
-void GameMode::setPlayerInfo(QString)
-{
-    //设置玩家信息
-}
-
 void GameMode::getNewConn()
 {
     //接收到新的连接 - 处理
     player_socket = host_server->nextPendingConnection();
+
+    //告知服务器加入Host的房间成功
+    server_status->joinHostYes(player_socket->peerAddress().toString());
+
     connect(player_socket,&QTcpSocket::readyRead,this,&GameMode::getNewDataFromClient);
     emit PlayerJoin();
 }
@@ -499,7 +472,8 @@ void GameMode::getNewDataFromClient()
     case COMM_CLIENT_ONCHESS:
         recvMsgOnchess();
         break;
-    case COMM_CLIENT_LOSE:
+    case COMM_CLIENT_QUITGAME:
+        recvMsgPlayerQuit();
         break;
     case COMM_CLIENT_UNDO:
         recvMsgUndo();
@@ -536,6 +510,7 @@ void GameMode::recvMsgGameStart()
         playerFlag = true;
     }
 }
+
 void GameMode::undo()
 {
     if(gameType == BOT)
@@ -554,6 +529,7 @@ void GameMode::actionUndo()
     boardStatusVec = boardRecord.pop();
     boardStatusVec = boardRecord.top();
 }
+
 void GameMode::recvMsgUndo()
 {
     emit MsgUndo();
@@ -566,6 +542,7 @@ void GameMode::sendUndoInfo(bool flag)
     else
         DataClass::sendMsg(COMM_CLIENT_UNDONO,"",player_socket);
 }
+
 void GameMode::recvMsgUndoYes()
 {
     actionUndo();
@@ -576,3 +553,36 @@ void GameMode::recvMsgUndoNo()
 {
     emit isAgreeUndo(false);
 }
+
+void GameMode::playerQuit()
+{
+    //告知对方退出游戏,也有可能是在准备阶段
+    if(player_socket)
+    {
+        DataClass::sendMsg(COMM_CLIENT_QUITGAME,"",player_socket);
+        player_socket->close();
+        player_socket = nullptr;
+    }
+
+    if(player_role == HOST)
+        DataClass::sendMsg(COMM_CLIENT_QUITGAME,"H",server_status->conn_Server_Socket);
+    else if(player_role == GUEST)
+        DataClass::sendMsg(COMM_CLIENT_QUITGAME,"G",server_status->conn_Server_Socket);
+
+    if(player_role == HOST)
+        server_status->exec();
+}
+
+void GameMode::recvMsgPlayerQuit()
+{
+    emit MsgPlayerQuit();
+    player_socket->close();
+    player_socket = nullptr;
+    server_status->exec();
+}
+
+ServerStatus *GameMode::getServerStatus()
+{
+    return server_status;
+}
+

@@ -3,7 +3,7 @@
 
 ServerStatus::ServerStatus(QDialog *parent) :
     QDialog(parent),
-    ui(new Ui::ServerStatus),conn_flag(false)
+    ui(new Ui::ServerStatus),conn_flag(false),conn_Server_Socket(nullptr)
 {
     ui->setupUi(this);
     //将此类的窗口设置为模态
@@ -16,6 +16,7 @@ ServerStatus::ServerStatus(QDialog *parent) :
 
     login_server = new LoginServer();
 
+    conn_Server_Socket = new QTcpSocket();
     connect(login_server,SIGNAL(connectYes(QTcpSocket*)),
             this,SLOT(setSocket(QTcpSocket*)));
 
@@ -38,21 +39,19 @@ ServerStatus::~ServerStatus()
 
 void ServerStatus::setSocket(QTcpSocket* _socket)
 {
-    qDebug() <<__FUNCTION__<< " this";
     conn_Server_Socket = _socket;
     conn_flag = true;
 
     ui->btn_create_room->setDisabled(false);
-
 
     //socket有待处理信息 - 更新游戏大厅
     connect(conn_Server_Socket,&QTcpSocket::readyRead,
             this,&ServerStatus::getGameInfoData);
 }
 
-NetPlayerInfo* ServerStatus::getNetPlayerInfo()
+QTcpSocket* ServerStatus::getServerSocket()
 {
-    return net_player_info;
+    return conn_Server_Socket;
 }
 
 QString ServerStatus::getHostSocket()
@@ -68,14 +67,6 @@ void ServerStatus::on_btn_create_room_clicked()
 {
     //建立主机
     DataClass::sendMsg(COMM_CLIENT_CREATE,"",conn_Server_Socket);
-
-    //connect(conn_Server_Socket,&QTcpSocket::readyRead,
-    //       game_status,&GameMode::getNewDataFromServer);
-    net_player_info = new NetPlayerInfo();
-
-    net_player_info->username = DataClass::username;
-    net_player_info->socket = nullptr;
-    net_player_info->role = HOST;
 
     emit createRoom(HOST);
 
@@ -119,7 +110,6 @@ void ServerStatus::getGameInfoData()
     {
         if(mrt->data == "")
         {
-            qDebug() << "commmmm";
             ui->tbw_lobby_info->setRowCount(0);
         }
         setLobbyInfo(mrt->data);
@@ -178,9 +168,6 @@ void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
         }
     }
 
-    //加入Host 的房间 - 请求与Host建立连接
-    DataClass::sendMsg(COMM_CLIENT_JOIN,ui->tbw_lobby_info->item(row,0)->text(),conn_Server_Socket);
-
     emit createRoom(GUEST);
 
     host_socket = ui->tbw_lobby_info->item(row,0)->text();
@@ -188,4 +175,10 @@ void ServerStatus::on_tbw_lobby_info_itemDoubleClicked(QTableWidgetItem *item)
     this->close();
 }
 
+void ServerStatus::joinHostYes(QString addr)
+{
+    qDebug()<<__FUNCTION__<<addr;
+    //加入Host的房间成功
+    DataClass::sendMsg(COMM_CLIENT_JOIN,addr,conn_Server_Socket);
+}
 

@@ -66,6 +66,8 @@ private:
     //当前玩家在网络对战中的角色
     PlayerRole player_role;
 
+    void setTextInfo(QString);
+
 private slots:
 
     //关于 ui
@@ -100,11 +102,15 @@ private slots:
     //悔棋
     void undo();
 
+    //退出到大厅
+    void PlayerQuit();
+
     void isAgreeUndo(bool);
 
     void on_btn_send_char_msg_clicked();
     void on_btn_ready_clicked();
     void on_btn_undo_clicked();
+    void on_btn_currender_clicked();
 };
 
 #endif // HOMEPAGE_H

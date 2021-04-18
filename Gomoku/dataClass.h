@@ -46,6 +46,8 @@ enum CommRequestType
     COMM_CLIENT_JOIN,
     //请求断开连接
     COMM_CLIENT_OFFCONN,
+    //退出当前游戏
+    COMM_CLIENT_QUITGAME,
 
     //客户端方-游戏进行阶段
     //双方已完成准备，游戏开始

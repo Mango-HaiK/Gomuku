@@ -84,17 +84,14 @@ public:
     /**************/
 
     //人 - 人对抗
-    //设置socket
-    void setSocket(QTcpSocket *socket);
+    //设置与服务器的socket
+    void setSocket();
 
     //从服务器获取新连接
     void getNewDataFromServer();
 
     //当前下棋的一方 -VS Person
     PlayerRole turnFlag;
-
-    //设置玩家信息 - 参数为对手的信息
-    void setPlayerInfo(QString);
 
     //新连接
     void getNewConn();
@@ -126,16 +123,15 @@ public:
     void recvMsgUndoNo();
 
     void sendUndoInfo(bool);
+
+    //退出房间
+    void playerQuit();
+
+    //返回服务器窗口
+    ServerStatus *getServerStatus();
 private:
     //数据
     MsgRequestType *mrt;
-
-
-    //主机玩家信息
-    NetPlayerInfo *host_player_info;
-
-    //客机玩家信息
-    NetPlayerInfo *guest_player_info;
 
     //玩家角色
     PlayerRole player_role;
@@ -156,6 +152,7 @@ private:
     //落子
     void recvMsgOnchess();
 
+    void recvMsgPlayerQuit();
 
 private slots:
     //设置玩家角色
@@ -180,6 +177,8 @@ signals:
     void MsgUndo();
 
     void isAgreeUndo(bool);
+
+    void MsgPlayerQuit();
 };
 
 #endif // GAMEMODE_H
