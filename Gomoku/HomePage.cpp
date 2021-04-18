@@ -126,6 +126,7 @@ void HomePage::paintEvent(QPaintEvent *event)
             }
         }
     }
+
     //判断对局是否结束
     if(clickPosRow > 0 && clickPosRow < BoardSize &&
             clickPosCol > 0 && clickPosCol < BoardSize &&
@@ -134,34 +135,27 @@ void HomePage::paintEvent(QPaintEvent *event)
     {
         if(game->isWin(clickPosRow, clickPosCol) && game->gameStatus == PLAYING)
         {
-            //game->gameStatus = WIN;
-
             QString str = NULL;
             if(game->boardStatusVec[clickPosRow][clickPosCol] == 1)
             {
-                str = "White Win";
-                QMessageBox::information(this,"","游戏结束白棋获胜");
+                str = "游戏结束白棋获胜";
             }
-
             else if(game->boardStatusVec[clickPosRow][clickPosCol] == -1)
             {
-                str = "Black Win";
-                QMessageBox::information(this,"","游戏结束黑棋获胜");
+                str = "游戏结束黑棋获胜";
             }
-
+            QMessageBox::StandardButton btnValue = QMessageBox::information(this,"",str);
             //TODO 对局结束
-            if(game->isWin(clickPosRow,clickPosCol))
+            qDebug() << str ;
+            if(btnValue == QMessageBox::Ok && game_type == PERSON)
             {
-                qDebug() << str ;
-                if(game_type == PERSON)
-                {
 
-                }else
-                {
-                    initPVEGame();
-                }
-                game->initBoard();
+            }else
+            {
+                game->readyGame(game_type);
+                game->gameStatus = PLAYING;
             }
+            game->initBoard();
         }
     }
 
@@ -169,7 +163,6 @@ void HomePage::paintEvent(QPaintEvent *event)
     if(game->isDead())
     {
         QMessageBox::information(this,"提示","死局，请开启下一局游戏！");
-
     }
 
     //场上棋子数大于8且不小于6时才能悔棋
@@ -262,7 +255,10 @@ void HomePage::mouseReleaseEvent(QMouseEvent *event)
             QTimer::singleShot(AIDelay,this,&HomePage::chessOneByAI);
     }
 }
+void HomePage::mousePressEvent(QMouseEvent *event)
+{
 
+}
 void HomePage::closeEvent(QCloseEvent *event)
 {
     if(!DataClass::checkMsgBox("退出","确认退出游戏？"))
@@ -415,7 +411,7 @@ void HomePage::on_btn_send_char_msg_clicked()
     QString msg = ui->edit_send_msg->text();
     ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
                                     " 自己:"+ msg);
-    DataClass::sendMsg(COMM_CLIENT_SENCHAT,msg,game->player_socket);
+    DataClass::sendMsg(MSG_CLIENT_SENCHAT,msg,game->player_socket);
 
     ui->edit_send_msg->setText("");
 }

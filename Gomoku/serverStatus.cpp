@@ -66,7 +66,7 @@ void ServerStatus::on_btn_login_server_clicked()
 void ServerStatus::on_btn_create_room_clicked()
 {
     //建立主机
-    DataClass::sendMsg(COMM_CLIENT_CREATE,"",conn_Server_Socket);
+    DataClass::sendMsg(MSG_CLIENT_CREATE,"",conn_Server_Socket);
 
     emit createRoom(HOST);
 
@@ -81,7 +81,7 @@ void ServerStatus::on_btn_quit_lobby_clicked()
     if(conn_Server_Socket)
     {
         //告知服务器关闭连接
-        DataClass::sendMsg(COMM_CLIENT_OFFCONN,"",conn_Server_Socket);
+        DataClass::sendMsg(MSG_CLIENT_OFFCONN,"",conn_Server_Socket);
 
         conn_Server_Socket->close();
         conn_Server_Socket = nullptr;
@@ -106,7 +106,7 @@ void ServerStatus::getGameInfoData()
 
     in>>mrt->request>>mrt->data;
 
-    if(mrt->request == COMM_SERVER_GAMEINFO)
+    if(mrt->request == MSG_SERVER_GAMEINFO)
     {
         if(mrt->data == "")
         {
@@ -179,6 +179,6 @@ void ServerStatus::joinHostYes(QString addr)
 {
     qDebug()<<__FUNCTION__<<addr;
     //加入Host的房间成功
-    DataClass::sendMsg(COMM_CLIENT_JOIN,addr,conn_Server_Socket);
+    DataClass::sendMsg(MSG_CLIENT_JOIN,addr,conn_Server_Socket);
 }
 

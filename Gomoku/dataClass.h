@@ -29,45 +29,45 @@ enum CommRequestType
 {
     //服务器方
     /*连接成功*/
-    COMM_SERVER_CONNYES,
+    MSG_SERVER_CONNYES,
     //连接失败
-    COMM_SERVER_COMMNO,
+    MSG_SERVER_COMMNO,
     //发送大厅信息
-    COMM_SERVER_GAMEINFO,
+    MSG_SERVER_GAMEINFO,
     //服务器关闭
-    COMM_SERVER_CLOSE,
+    MSG_SERVER_CLOSE,
 
     //客户端方-连接阶段
     //建立主机
-    COMM_CLIENT_CREATE,
+    MSG_CLIENT_CREATE,
     //请求连接服务器
-    COMM_CLIENT_ACKCONN,
+    MSG_CLIENT_ACKCONN,
     //请求加入游戏
-    COMM_CLIENT_JOIN,
+    MSG_CLIENT_JOIN,
     //请求断开连接
-    COMM_CLIENT_OFFCONN,
+    MSG_CLIENT_OFFCONN,
     //退出当前游戏
-    COMM_CLIENT_QUITGAME,
+    MSG_CLIENT_QUITGAME,
 
     //客户端方-游戏进行阶段
     //双方已完成准备，游戏开始
-    COMM_CLIENT_GAMESTART,
+    MSG_CLIENT_GAMESTART,
     //已有玩家获胜，游戏结束
-    COMM_CLIENT_GAMEOVER,
+    MSG_CLIENT_GAMEOVER,
     //玩家落子
-    COMM_CLIENT_ONCHESS,
+    MSG_CLIENT_ONCHESS,
     //发送聊天信息
-    COMM_CLIENT_SENCHAT,
+    MSG_CLIENT_SENCHAT,
     //悔棋
-    COMM_CLIENT_UNDO,
+    MSG_CLIENT_UNDO,
     //拒绝悔棋
-    COMM_CLIENT_UNDONO,
+    MSG_CLIENT_UNDONO,
     //同意悔棋
-    COMM_CLIENT_UNDOYES,
+    MSG_CLIENT_UNDOYES,
     //玩家认输
-    COMM_CLIENT_LOSE,
+    MSG_CLIENT_LOSE,
     //对方掉线
-    COMM_CLIENT_CONNLOSE
+    MSG_CLIENT_CONNLOSE
 };
 
 //发送数据

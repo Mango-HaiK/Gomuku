@@ -133,7 +133,7 @@ void GameMode::actionByPerson(int row, int col)
 {
     updateBoardVec(row,col);
     if(gameType == PERSON)
-        DataClass::sendMsg(COMM_CLIENT_ONCHESS,
+        DataClass::sendMsg(MSG_CLIENT_ONCHESS,
                            QString::number(row)+"_"+QString::number(col),player_socket);
 }
 
@@ -375,7 +375,7 @@ void GameMode::getNewDataFromServer()
     in.setDevice(conn_server_socket);
     in>>mrt->request>>mrt->data;
 
-    if(mrt->request == COMM_CLIENT_JOIN)
+    if(mrt->request == MSG_CLIENT_JOIN)
         //TODO 对手加入游戏
         return;
 }
@@ -463,25 +463,25 @@ void GameMode::getNewDataFromClient()
     qDebug() << __FUNCTION__ <<mrt->request <<" "<<mrt->data;
 
     switch (mrt->request) {
-    case COMM_CLIENT_GAMESTART:
+    case MSG_CLIENT_GAMESTART:
         recvMsgGameStart();
         break;
-    case COMM_CLIENT_SENCHAT:
+    case MSG_CLIENT_SENCHAT:
         emit MsgChat(mrt->data);
         break;
-    case COMM_CLIENT_ONCHESS:
+    case MSG_CLIENT_ONCHESS:
         recvMsgOnchess();
         break;
-    case COMM_CLIENT_QUITGAME:
+    case MSG_CLIENT_QUITGAME:
         recvMsgPlayerQuit();
         break;
-    case COMM_CLIENT_UNDO:
+    case MSG_CLIENT_UNDO:
         recvMsgUndo();
         break;
-    case COMM_CLIENT_UNDOYES:
+    case MSG_CLIENT_UNDOYES:
         recvMsgUndoYes();
         break;
-    case COMM_CLIENT_UNDONO:
+    case MSG_CLIENT_UNDONO:
         recvMsgUndoNo();
         break;
     }
@@ -502,7 +502,7 @@ void GameMode::recvMsgGameStart()
     gameStatus = PLAYING;
     if(player_role == GUEST)
     {
-        DataClass::sendMsg(COMM_CLIENT_GAMESTART,"",player_socket);
+        DataClass::sendMsg(MSG_CLIENT_GAMESTART,"",player_socket);
         playerFlag = false;
     }else
     {
@@ -518,7 +518,7 @@ void GameMode::undo()
         actionUndo();
     }else
     {
-        DataClass::sendMsg(COMM_CLIENT_UNDO,"",player_socket);
+        DataClass::sendMsg(MSG_CLIENT_UNDO,"",player_socket);
     }
 }
 
@@ -538,9 +538,9 @@ void GameMode::recvMsgUndo()
 void GameMode::sendUndoInfo(bool flag)
 {
     if(flag)
-        DataClass::sendMsg(COMM_CLIENT_UNDOYES,"",player_socket);
+        DataClass::sendMsg(MSG_CLIENT_UNDOYES,"",player_socket);
     else
-        DataClass::sendMsg(COMM_CLIENT_UNDONO,"",player_socket);
+        DataClass::sendMsg(MSG_CLIENT_UNDONO,"",player_socket);
 }
 
 void GameMode::recvMsgUndoYes()
@@ -559,15 +559,15 @@ void GameMode::playerQuit()
     //告知对方退出游戏,也有可能是在准备阶段
     if(player_socket)
     {
-        DataClass::sendMsg(COMM_CLIENT_QUITGAME,"",player_socket);
+        DataClass::sendMsg(MSG_CLIENT_QUITGAME,"",player_socket);
         player_socket->close();
         player_socket = nullptr;
     }
 
     if(player_role == HOST)
-        DataClass::sendMsg(COMM_CLIENT_QUITGAME,"H",server_status->conn_Server_Socket);
+        DataClass::sendMsg(MSG_CLIENT_QUITGAME,"H",server_status->conn_Server_Socket);
     else if(player_role == GUEST)
-        DataClass::sendMsg(COMM_CLIENT_QUITGAME,"G",server_status->conn_Server_Socket);
+        DataClass::sendMsg(MSG_CLIENT_QUITGAME,"G",server_status->conn_Server_Socket);
 
     if(player_role == HOST)
         server_status->exec();

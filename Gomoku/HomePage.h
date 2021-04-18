@@ -40,6 +40,7 @@ protected:
     //落子
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void mousePressEvent(QMouseEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 
 private:
