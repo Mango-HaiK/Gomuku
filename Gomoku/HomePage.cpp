@@ -1,10 +1,18 @@
 ﻿#include "HomePage.h"
 #include "ui_HomePage.h"
+#include "helpdiglog.h"
 #include <QMouseEvent>
 #include <QDebug>
 #include <QtMath>
 #include <QTimer>
 #include <QDateTime>
+#include <QSound>
+#define CHESS_ONE_SOUND ":/sound/chessone.wav"
+#define WIN_SOUND ":/sound/win.wav"
+#define LOSE_SOUND ":/sound/lose.wav"
+#define BLACK_ICO ":/image/black.ico"
+#define WHITE_ICO ":/image/white.ico"
+
 
 //
 const int BoardSize = 15;
@@ -31,7 +39,6 @@ const int PosDelta = 20;
 //AI思考时间
 const int AIDelay = 500;
 
-
 HomePage::HomePage(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::HomePage)
@@ -44,23 +51,34 @@ HomePage::HomePage(QWidget *parent) :
 
     setMouseTracking(true);
 
+    ui->lab_firstA->hide();
+    ui->lab_fristB->hide();
     startForm = new StartGame();
-
+    on_chess_time = new QTimer();
+    on_chess_time->setInterval(1000);
+    connect(on_chess_time,&QTimer::timeout,this,&HomePage::timeOut);
     //绑定信号
     connect(startForm,&StartGame::actionPVEMode,this,&HomePage::initPVEGame);
     connect(startForm,&StartGame::actionPVPMode,this,&HomePage::initPVPGame);
 
     ui->btn_undo->setDisabled(true);
 
+
     initGameInfo();
 }
 
+void HomePage::timeOut()
+{
+    //QMessageBox::information(this,"提示","你的对手等的花都谢了");
+}
 HomePage::~HomePage()
 {
     if(startForm)  delete startForm;
     if(game) delete game;
+    if(on_chess_time) delete on_chess_time;
     delete ui;
 }
+
 
 void HomePage::setTextInfo(QString msg)
 {
@@ -103,7 +121,13 @@ void HomePage::paintEvent(QPaintEvent *event)
                          BoardMargin + clickPosRow * BlockSize - (MarkSize / 2 ),
                          MarkSize,MarkSize);
     }
-
+    QBrush brush1;
+    brush1.setStyle(Qt::SolidPattern);
+    brush1.setColor(Qt::black);
+    painter.setBrush(brush1);
+    painter.drawRect(BoardMargin + 8 * BlockSize - (MarkSize / 2),
+                     BoardMargin + 7 * BlockSize - (MarkSize / 2 ),
+                     MarkSize,MarkSize);
     //绘制棋子
     for (int i = 0; i < BoardSize; ++i)
     {
@@ -133,29 +157,11 @@ void HomePage::paintEvent(QPaintEvent *event)
             (game->boardStatusVec[clickPosRow][clickPosCol] == 1 ||
              game->boardStatusVec[clickPosRow][clickPosCol] == -1))
     {
-        if(game->isWin(clickPosRow, clickPosCol) && game->gameStatus == PLAYING)
+    //输赢
+        if(game->isWin(clickPosRow,clickPosCol))
         {
-            QString str = NULL;
-            if(game->boardStatusVec[clickPosRow][clickPosCol] == 1)
-            {
-                str = "游戏结束白棋获胜";
-            }
-            else if(game->boardStatusVec[clickPosRow][clickPosCol] == -1)
-            {
-                str = "游戏结束黑棋获胜";
-            }
-            QMessageBox::StandardButton btnValue = QMessageBox::information(this,"",str);
-            //TODO 对局结束
-            qDebug() << str ;
-            if(btnValue == QMessageBox::Ok && game_type == PERSON)
-            {
-
-            }else
-            {
-                game->readyGame(game_type);
-                game->gameStatus = PLAYING;
-            }
-            game->initBoard();
+            checkWin();
+            return;
         }
     }
 
@@ -170,10 +176,10 @@ void HomePage::paintEvent(QPaintEvent *event)
             game->playerFlag &&
             game->actionNum >= 8)
     {
-        ui->btn_undo->setDisabled(false);
+        ui->btn_undo->setDisabled(false);   //关闭悔棋按钮
     }
     if(game->actionNum <= 6 || !game->playerFlag)
-        ui->btn_undo->setDisabled(true);
+        ui->btn_undo->setDisabled(true);    //开启悔棋按钮
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
@@ -269,12 +275,45 @@ void HomePage::closeEvent(QCloseEvent *event)
         event->accept();
 }
 
+void HomePage::checkWin()
+{
+    //判断对局是否结束
+    if(clickPosRow > 0 && clickPosRow < BoardSize &&
+            clickPosCol > 0 && clickPosCol < BoardSize &&
+            (game->boardStatusVec[clickPosRow][clickPosCol] == 1 ||
+             game->boardStatusVec[clickPosRow][clickPosCol] == -1))
+    {
+        if(game->isWin(clickPosRow, clickPosCol) && game->gameStatus == PLAYING)
+        {
+            QString str = NULL;
+            if(game->boardStatusVec[clickPosRow][clickPosCol] == 1)
+            {
+                str = "游戏结束白棋获胜";
+            }
+            else if(game->boardStatusVec[clickPosRow][clickPosCol] == -1)
+            {
+                str = "游戏结束黑棋获胜";
+            }
+            QMessageBox::StandardButton btnValue = QMessageBox::information(this,"",str);
+            //TODO 对局结束
+            qDebug() << str ;
+            if(btnValue == QMessageBox::Ok && game_type == PERSON)
+            {
+
+            }else
+            {
+                game->readyGame(game_type);
+                game->gameStatus = PLAYING;
+            }
+            game->initBoard();
+        }
+    }
+}
 void HomePage::initGameInfo()
 {
     game = new GameMode();
 
     startForm->exec();
-
 
     //initPVPGame();
 }
@@ -286,23 +325,34 @@ void HomePage::recvMsgGameReady(PlayerRole role)
     if(role == HOST)
     {
         ui->btn_ready->setDisabled(true);
-        ui->edit_playerA_name->setText("白棋");
-        ui->edit_playerB_name->setText("黑棋");
+        QPixmap pix1(WHITE_ICO);
+
+        ui->lab_playerA_chess->setPixmap(pix1);
+
+        QPixmap pix2(BLACK_ICO);
+        ui->lab_playerB_chess->setPixmap(pix2);
+
+        ui->lab_firstA->show();
         ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
                                         " 系统提示: 等待玩家加入...");
     }else
     {
         ui->btn_send_char_msg->setDisabled(false);
         ui->btn_ready->setDisabled(false);
-        ui->edit_playerA_name->setText("黑棋");
-        ui->edit_playerB_name->setText("白棋");
-        ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
-                                        " 系统提示: 已加入游戏,赶紧准备开始游戏吧！");
+
+        QPixmap pix1(WHITE_ICO);
+        ui->lab_playerB_chess->setPixmap(pix1);
+
+        QPixmap pix2(BLACK_ICO);
+        ui->lab_playerA_chess->setPixmap(pix2);
+        ui->lab_fristB->show();
+        setTextInfo(" 系统提示: 已加入游戏,赶紧准备开始游戏吧！");
     }
 }
 
 void HomePage::recvMsgGameStart()
 {
+    on_chess_time->start();
     //ui->btn_undo->setDisabled(false);
     ui->btn_currender->setDisabled(false);
     ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
@@ -313,16 +363,14 @@ void HomePage::recvPlayerJoin()
 {
     if(game->getCurrRole() == HOST)
     {
-        ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
-                                        " 系统提示: 已有玩家加入，等待对手准备开始游戏！");
+        setTextInfo("系统提示: 已有玩家加入，等待对手准备开始游戏！");
         ui->btn_send_char_msg->setDisabled(false);
     }
 }
 
 void HomePage::recvMsgChat(QString msg)
 {
-    ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
-                                    " 旗鼓相当的对手:"+ msg);
+    setTextInfo(" 旗鼓相当的对手:"+ msg);
 }
 
 void HomePage::listenErrorDispos()
@@ -335,13 +383,20 @@ void HomePage::initPVEGame()
     game_type = BOT;
     //人机模式直接开始不需要准备
     game->gameStatus = PLAYING;
+    QPixmap pix1(WHITE_ICO);
+    ui->lab_playerA_chess->setPixmap(pix1);
+
+    QPixmap pix2(BLACK_ICO);
+    ui->lab_playerB_chess->setPixmap(pix2);
+
+    ui->lab_firstA->show();
 
     ui->btn_ready->setDisabled(true);
     ui->btn_undo->setDisabled(true);
     ui->btn_send_char_msg->setDisabled(true);
 
     game->readyGame(game_type);
-
+    setTextInfo("系统提示：游戏开始啦！");
     update();
 }
 
@@ -393,6 +448,7 @@ void HomePage::chessOneByPerson()
             game->boardStatusVec[clickPosRow][clickPosCol] == 0)
     {
         game->actionByPerson(clickPosRow,clickPosCol);
+        QSound::play(CHESS_ONE_SOUND);
         update();
     }
 }
@@ -401,6 +457,7 @@ void HomePage::chessOneByAI()
 {
     qDebug() << __FUNCTION__;
     game->actionByAI(clickPosRow,clickPosCol);
+    QSound::play(CHESS_ONE_SOUND);
     update();
 }
 
@@ -477,6 +534,11 @@ void HomePage::on_btn_currender_clicked()
 void HomePage::PlayerQuit()
 {
     QMessageBox::information(this,"提示","玩家已退出游戏");
-
 }
 
+
+void HomePage::on_btn_help_clicked()
+{
+    helpDiglog *hd = new helpDiglog();
+    hd->exec();
+}

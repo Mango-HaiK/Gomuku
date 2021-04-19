@@ -6,37 +6,65 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>426</width>
+    <height>296</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QPushButton" name="btn_PVP">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>190</y>
+     <y>180</y>
      <width>141</width>
      <height>91</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">font: 63 28pt &quot;PingFang SC&quot;;</string>
+   </property>
    <property name="text">
-    <string>PVP Mode</string>
+    <string>网络对战</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_PVE">
    <property name="geometry">
     <rect>
-     <x>230</x>
-     <y>190</y>
+     <x>240</x>
+     <y>180</y>
      <width>141</width>
      <height>91</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">font: 63 28pt &quot;PingFang SC&quot;;</string>
+   </property>
    <property name="text">
-    <string>PVE Mode</string>
+    <string>AI对战</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>40</y>
+     <width>171</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">font: 63 28pt &quot;PingFang SC&quot;;</string>
+   </property>
+   <property name="text">
+    <string>选择游戏模式</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::AutoText</enum>
    </property>
   </widget>
  </widget>

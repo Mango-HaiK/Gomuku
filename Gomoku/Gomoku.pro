@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     HomePage.cpp \
     gameMode.cpp \
+    helpdiglog.cpp \
     loginServer.cpp \
     serverStatus.cpp \
     dataClass.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
 HEADERS += \
     HomePage.h \
     gameMode.h \
+    helpdiglog.h \
     loginServer.h \
     serverStatus.h \
     dataClass.h \
@@ -34,6 +36,7 @@ HEADERS += \
 
 FORMS += \
     HomePage.ui \
+    helpdiglog.ui \
     loginserver.ui \
     serverStatus.ui \
     startGame.ui
@@ -45,3 +48,6 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    src.qrc

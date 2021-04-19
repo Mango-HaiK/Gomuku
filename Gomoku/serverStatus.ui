@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>游戏大厅</string>
   </property>
   <widget class="QTableWidget" name="tbw_lobby_info">
    <property name="geometry">
@@ -24,12 +24,12 @@
    </property>
    <column>
     <property name="text">
-     <string>主机</string>
+     <string>玩家A</string>
     </property>
    </column>
    <column>
     <property name="text">
-     <string>新建列</string>
+     <string>玩家B</string>
     </property>
    </column>
    <column>

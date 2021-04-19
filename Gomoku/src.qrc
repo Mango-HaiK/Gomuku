@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/image">
+        <file>black.ico</file>
+        <file>white.ico</file>
+        <file>wuziqi.jpeg</file>
+    </qresource>
+    <qresource prefix="/sound">
+        <file>chessone.wav</file>
+        <file>lose.wav</file>
+        <file>win.wav</file>
+    </qresource>
+</RCC>

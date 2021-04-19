@@ -14,6 +14,8 @@ ServerStatus::ServerStatus(QDialog *parent) :
     ui->tbw_lobby_info->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->tbw_lobby_info->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+    ui->tbw_lobby_info->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tbw_lobby_info->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     login_server = new LoginServer();
 
     conn_Server_Socket = new QTcpSocket();

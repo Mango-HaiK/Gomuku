@@ -10,6 +10,8 @@
 #include "startGame.h"
 #include "serverStatus.h"
 
+class QTimer;
+
 class QDateTime;
 
 namespace Ui {
@@ -29,7 +31,6 @@ public:
 
     //棋盘
     //棋盘大小
-
 protected:
     //绘制棋盘
     void paintEvent(QPaintEvent *event) override;
@@ -57,6 +58,8 @@ private:
     //服务器大厅
     ServerStatus *server_status;
 
+    QTimer *on_chess_time;
+
     //落子标记坐标
     int clickPosRow,clickPosCol;
 
@@ -69,8 +72,12 @@ private:
 
     void setTextInfo(QString);
 
+    void checkWin();
+
+
 private slots:
 
+    void timeOut();
     //关于 ui
     //游戏准备
     void recvMsgGameReady(PlayerRole);
@@ -112,6 +119,7 @@ private slots:
     void on_btn_ready_clicked();
     void on_btn_undo_clicked();
     void on_btn_currender_clicked();
+    void on_btn_help_clicked();
 };
 
 #endif // HOMEPAGE_H

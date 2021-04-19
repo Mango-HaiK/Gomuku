@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>五子棋游戏</string>
   </property>
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
@@ -51,7 +51,7 @@
       <property name="title">
        <string>自己</string>
       </property>
-      <widget class="QLabel" name="label_9">
+      <widget class="QLabel" name="lab_playerA_chess">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -63,6 +63,9 @@
        <property name="text">
         <string>TextLabel</string>
        </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QWidget" name="horizontalLayoutWidget_5">
        <property name="geometry">
@@ -70,24 +73,21 @@
          <x>100</x>
          <y>20</y>
          <width>151</width>
-         <height>31</height>
+         <height>36</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <widget class="QLabel" name="label_10">
+         <widget class="QLabel" name="lab_firstA">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(75, 63, 68);
+font: 75 24pt &quot;Marker Felt&quot;;</string>
+          </property>
           <property name="text">
-           <string>棋子：</string>
+           <string>先手</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="edit_playerA_name">
-          <property name="mouseTracking">
-           <bool>true</bool>
-          </property>
-          <property name="tabletTracking">
-           <bool>false</bool>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -99,19 +99,33 @@
          <x>100</x>
          <y>70</y>
          <width>151</width>
-         <height>31</height>
+         <height>36</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
          <widget class="QLabel" name="label_11">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(75, 63, 68);
+font: 75 24pt &quot;Marker Felt&quot;;</string>
+          </property>
           <property name="text">
-           <string>时间：</string>
+           <string>胜场：</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLCDNumber" name="lcd_PlayerA_time"/>
+         <widget class="QLCDNumber" name="lcd_PlayerA_win">
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <property name="midLineWidth">
+           <number>2</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -134,7 +148,7 @@
       <property name="title">
        <string>你的对手</string>
       </property>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="lab_playerB_chess">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -146,6 +160,9 @@
        <property name="text">
         <string>TextLabel</string>
        </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QWidget" name="horizontalLayoutWidget">
        <property name="geometry">
@@ -153,19 +170,23 @@
          <x>100</x>
          <y>20</y>
          <width>151</width>
-         <height>31</height>
+         <height>36</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="label_3">
+         <widget class="QLabel" name="lab_fristB">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(75, 63, 68);
+font: 75 24pt &quot;Marker Felt&quot;;</string>
+          </property>
           <property name="text">
-           <string>棋子：</string>
+           <string>先手</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="edit_playerB_name"/>
         </item>
        </layout>
       </widget>
@@ -175,19 +196,30 @@
          <x>100</x>
          <y>70</y>
          <width>151</width>
-         <height>31</height>
+         <height>36</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label_5">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(75, 63, 68);
+font: 75 24pt &quot;Marker Felt&quot;;</string>
+          </property>
           <property name="text">
-           <string>时间：</string>
+           <string>胜场：</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLCDNumber" name="lcd_PlayerB_time"/>
+         <widget class="QLCDNumber" name="lcd_PlayerB_win">
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <property name="midLineWidth">
+           <number>2</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -218,6 +250,15 @@
          <width>241</width>
          <height>246</height>
         </rect>
+       </property>
+       <property name="mouseTracking">
+        <bool>false</bool>
+       </property>
+       <property name="tabletTracking">
+        <bool>false</bool>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
        <property name="html">
         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -294,7 +335,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QPushButton" name="btn_setting">
+       <widget class="QPushButton" name="btn_help">
         <property name="text">
          <string>设置</string>
         </property>
