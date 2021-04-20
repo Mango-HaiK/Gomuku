@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>选择模式</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -21,7 +21,7 @@
     <rect>
      <x>30</x>
      <y>180</y>
-     <width>141</width>
+     <width>161</width>
      <height>91</height>
     </rect>
    </property>
@@ -35,9 +35,9 @@
   <widget class="QPushButton" name="btn_PVE">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>220</x>
      <y>180</y>
-     <width>141</width>
+     <width>191</width>
      <height>91</height>
     </rect>
    </property>
@@ -51,9 +51,9 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>120</x>
+     <x>100</x>
      <y>40</y>
-     <width>171</width>
+     <width>231</width>
      <height>91</height>
     </rect>
    </property>

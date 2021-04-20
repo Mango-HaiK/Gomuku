@@ -15,6 +15,8 @@ public:
     explicit StartGame(QWidget *parent = nullptr);
     ~StartGame();
 
+    void closeEvent(QCloseEvent *) override;
+
 signals:
     void actionPVEMode();
 

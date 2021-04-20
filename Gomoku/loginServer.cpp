@@ -9,8 +9,6 @@ LoginServer::LoginServer(QDialog *parent) :
     ui(new Ui::LoginServer), conn_Server_Socket(nullptr)
 {
     ui->setupUi(this);
-
-    ui->edit_username->setText("mango");
     ui->edit_ipadds->setText("127.0.0.1");
     ui->edit_port->setText("1101");
 
@@ -30,7 +28,6 @@ QTcpSocket *LoginServer::getConnServerSocket()
 
 void LoginServer::connServerYes()
 {
-    DataClass::username = ui->edit_username->text();
     DataClass::port = ui->edit_port->text().toInt();
 
     qDebug() << "连接成功";
@@ -65,8 +62,7 @@ void LoginServer::disConn()
 
 void LoginServer::on_btn_join_clicked()
 {
-    if(ui->edit_username->text() == "" ||
-            ui->edit_ipadds->text() == "" ||
+    if(ui->edit_ipadds->text() == "" ||
             ui->edit_port->text() == "")
     {
         QMessageBox::information(this,"错误","请输入相关信息");

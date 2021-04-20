@@ -13,6 +13,12 @@ StartGame::~StartGame()
     delete ui;
 }
 
+void StartGame::closeEvent(QCloseEvent *)
+{
+    QApplication *app;
+    app->exit(0);
+}
+
 void StartGame::on_btn_PVE_clicked()
 {
     emit actionPVEMode();
