@@ -63,6 +63,7 @@ QString ServerStatus::getHostSocket()
 
 void ServerStatus::on_btn_login_server_clicked()
 {
+    login_server->setWindowFlags(login_server->windowFlags() | Qt::WindowStaysOnTopHint);
     login_server->exec();
 }
 void ServerStatus::on_btn_create_room_clicked()

@@ -27,7 +27,7 @@ private slots:
     void playerJoinHost(QString,QString);
 
     //对方玩家退出主机
-    void playerQuitHost(QString,QString);
+    void playerQuitGame(QString,QString);
 
     //对方玩家连接丢失
     void playerLost(QString);
@@ -47,6 +47,8 @@ public:
 
     //设置服务
     void setGameServer(QTcpServer *);
+
+
 private:
     Ui::ServerStatus *ui;
 

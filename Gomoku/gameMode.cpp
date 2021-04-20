@@ -32,7 +32,6 @@ void GameMode::initBoard()
     }
     //初始化棋盘记录
     boardRecord.clear();
-
     actionNum = 0;
 }
 
@@ -46,7 +45,9 @@ void GameMode::readyGame(GameType type)
         server_status = new ServerStatus();
         //这里需要对 Host or Guest 分别处理
 
+        server_status->setWindowFlags(server_status->windowFlags() | Qt::WindowStaysOnTopHint);
         server_status->show();
+        server_status->raise();
         //进入房间 -
         connect(server_status,SIGNAL(createRoom(PlayerRole)),
                 this,SLOT(setPlayerRole(PlayerRole)));
@@ -314,20 +315,20 @@ void GameMode::calculateScore()
                                     break;
                             }
 
-                            if (botNum == 0)                      // 普通下子
+                            if (botNum == 0)                   // 普通下子
                                 scoreVec[row][col] += 5;
-                            else if (botNum == 1)                 // 活二
+                            else if (botNum == 1)              // 活二
                                 scoreVec[row][col] += 10;
                             else if (botNum == 2)
                             {
-                                if (emptyNum == 1)                // 死三
+                                if (emptyNum == 1)             // 死三
                                     scoreVec[row][col] += 25;
                                 else if (emptyNum == 2)
                                     scoreVec[row][col] += 50;  // 活三
                             }
                             else if (botNum == 3)
                             {
-                                if (emptyNum == 1)                // 死四
+                                if (emptyNum == 1)             // 死四
                                     scoreVec[row][col] += 55;
                                 else if (emptyNum == 2)
                                     scoreVec[row][col] += 100; // 活四

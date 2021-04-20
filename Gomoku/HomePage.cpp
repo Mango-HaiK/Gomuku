@@ -13,7 +13,6 @@
 #define BLACK_ICO ":/image/black.ico"
 #define WHITE_ICO ":/image/white.ico"
 
-
 //
 const int BoardSize = 15;
 
@@ -183,7 +182,6 @@ void HomePage::paintEvent(QPaintEvent *event)
 }
 void HomePage::mouseMoveEvent(QMouseEvent *event)
 {
-    //qDebug() <<__FUNCTION__<<game->gameStatus <<" "<<game->playerFlag;
     if(!game->playerFlag || game->gameStatus == READ)
         return;
 
@@ -209,10 +207,8 @@ void HomePage::mouseMoveEvent(QMouseEvent *event)
 
         //一个方框分成四个区域，根据区域内算出离哪个点最近，从而确定点击位置
         len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
-        len = sqrt((x - leftTopPosX) * (x - leftTopPosX) + (y - leftTopPosY) * (y - leftTopPosY));
         if(len < PosDelta)
         {
-            //qDebug("he");
             clickPosCol = col;
             clickPosRow = row;
         }
@@ -288,11 +284,11 @@ void HomePage::checkWin()
             QString str = NULL;
             if(game->boardStatusVec[clickPosRow][clickPosCol] == 1)
             {
-                str = "游戏结束白棋获胜";
+                str = "游戏结束白棋获胜，再来一局吧！";
             }
             else if(game->boardStatusVec[clickPosRow][clickPosCol] == -1)
             {
-                str = "游戏结束黑棋获胜";
+                str = "游戏结束黑棋获胜，再来一局吧！";
             }
             QMessageBox::StandardButton btnValue = QMessageBox::information(this,"",str);
             //TODO 对局结束
@@ -334,7 +330,7 @@ void HomePage::recvMsgGameReady(PlayerRole role)
 
         ui->lab_firstA->show();
         ui->text_edit_chat_info->append(QDateTime::currentDateTime().toString("hh:mm") +
-                                        " 系统提示: 等待玩家加入...");
+                                        "系统提示: 等待玩家加入...");
     }else
     {
         ui->btn_send_char_msg->setDisabled(false);
@@ -346,7 +342,7 @@ void HomePage::recvMsgGameReady(PlayerRole role)
         QPixmap pix2(BLACK_ICO);
         ui->lab_playerA_chess->setPixmap(pix2);
         ui->lab_fristB->show();
-        setTextInfo(" 系统提示: 已加入游戏,赶紧准备开始游戏吧！");
+        setTextInfo("系统提示: 已加入游戏,赶紧准备开始游戏吧！");
     }
 }
 
@@ -370,7 +366,7 @@ void HomePage::recvPlayerJoin()
 
 void HomePage::recvMsgChat(QString msg)
 {
-    setTextInfo(" 旗鼓相当的对手:"+ msg);
+    setTextInfo("你的对手:"+ msg);
 }
 
 void HomePage::listenErrorDispos()
