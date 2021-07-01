@@ -1,5 +1,0 @@
-<RCC>
-  <qresource prefix="Server">
-    <file>Resources/exe.ico</file>
-  </qresource>
-</RCC>
